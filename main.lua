@@ -43,7 +43,6 @@ function love.load()
 
   
   root = Root()
-  pathProgress = 0.025
 end
 
 function love.update(dt)
@@ -58,6 +57,7 @@ function love.update(dt)
 end
 
 function love.keypressed(key, scancode, isrepeat) 
+  root:handleInput(key)
   if key == "s" or key == "down" then
     headIncremented = {
       x = head.x,
@@ -79,7 +79,9 @@ function love.keypressed(key, scancode, isrepeat)
   -- -- elseif love.keyboard.isDown("s") then
   -- --   camera:move(0, DEBUG_VELOCITY_PIXELS_PER_SECOND * dt)
   -- end
+  root:update(dt)
 end
+
 
 function dropletSpawn()
   droplet = {}
@@ -124,7 +126,7 @@ function love.draw()
 
   -- curve = love.math.newBezierCurve({25,25,35,50,45,25,55,0,75,25,85,50})
   curve = love.math.newBezierCurve(root:toCoordinates())
-  coordinates = curve:renderSegment(0.0, pathProgress, 5)
+  coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 
   -- coordinates = curve:render()
   love.graphics.line(coordinates)
