@@ -1,6 +1,7 @@
 Tile = Object:extend()
 
 Nutrients = {
+  ZERO=0,
 	ONE=1,
 	TWO=2,
 	THREE=3,
@@ -13,7 +14,7 @@ function createTiles()
 	createdTiles = {}
   for y=0, gridHeight do 
     for x=0, gridWidth do 
-      newTile = Tile(x, y, love.math.random(1, 6))
+      newTile = Tile(x, y, love.math.random(0, 5))
       table.insert(createdTiles, newTile)
     end
   end
@@ -40,9 +41,15 @@ function Tile:draw()
   	self:drawFour()
   elseif self.tile == Nutrients.FIVE then 
     self:drawFive()
-  elseif self.tile == Nutrients.FOG then 
+  elseif self.tile == Nutrients.ZERO then 
     self:drawFog()  
   end
+end
+
+function Tile:drawZero()
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(n0, 0, 0)
+  love.graphics.origin()
 end
 
 function Tile:drawOne()
@@ -77,6 +84,9 @@ end
 
 function Tile:drawFog()
   love.graphics.translate(self.x, self.y)
-  love.graphics.draw(fog, 0, 0)
+  love.graphics.setColor(black)
+  love.graphics.rectangle("fill", 0, 0, tileSize, tileSize)
+  love.graphics.setColor(white)
   love.graphics.origin()
 end
+
