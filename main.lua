@@ -4,6 +4,7 @@ io.stdout:setvbuf("no")
 function love.load()
   Object = require "classic"
   require "tiles"
+  require "root"
 
   white = {1, 1, 1}
   black = {0, 0, 0}
@@ -41,23 +42,8 @@ function love.load()
   tiles = createTiles()
 
   
-  rootNodes = {}
-  seed = {
-    x =  50,
-    y = 1
-  }
-  table.insert(rootNodes, seed)
-  table.insert(rootNodes, {x = 51, y = 2})
-
-  head = {
-    x = 52, 
-    y = 2
-  }
-  table.insert(rootNodes, head)
-
-
+  root = Root()
   pathProgress = 0.025
-  
 end
 
 function love.update(dt)
@@ -128,20 +114,20 @@ function love.draw()
   -- 100 x 15 - underground grid
   -- aka 1000 x 150 pixels
 --   curvePoints = {}
---   for index,node in ipairs(rootNodes) do 
---     print("adding node.x: ", (node.x * tileSize)," - node.y: ", (gridStartingY + node.y * tileSize))
---     table.insert(curvePoints, node.x * tileSize)
---     table.insert(curvePoints, gridStartingY + node.y * tileSize)
---   end
+  -- for index,node in ipairs(rootNodes) do 
+  --   print("adding node.x: ", (node.x * tileSize)," - node.y: ", (gridStartingY + node.y * tileSize))
+  --   table.insert(curvePoints, node.x * tileSize)
+  --   table.insert(curvePoints, gridStartingY + node.y * tileSize)
+  -- end
 
 -- print{curvePoints}
 
---   -- curve = love.math.newBezierCurve({25,25,35,50,45,25,55,0,75,25,85,50})
---   curve = love.math.newBezierCurve(curvePoints)
---   coordinates = curve:renderSegment(0.0, pathProgress, 5)
+  -- curve = love.math.newBezierCurve({25,25,35,50,45,25,55,0,75,25,85,50})
+  curve = love.math.newBezierCurve(root:toCoordinates())
+  coordinates = curve:renderSegment(0.0, pathProgress, 5)
 
---   -- coordinates = curve:render()
---   love.graphics.line(coordinates)
+  -- coordinates = curve:render()
+  love.graphics.line(coordinates)
   -- love.graphics.line(400, 100, 400, 150, 420, 200)
   -- love.graphics.arc("line", "open", 300, 100, 100, math.pi, math.pi / 2, 15)
   -- love.graphics.arc("line", "open", 300, 100, 100, math.pi, math.pi / 2, 15)
