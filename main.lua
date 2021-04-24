@@ -5,26 +5,33 @@ function love.load()
   Object = require "classic"
   require "tiles"
 
-  primaryColor = {0.1, 0.1, 0.1}
-  blueprintColor = {0.41, 0.53, 0.97}
-  primaryWhite = {0.97, 0.97, 0.97}
+  white = {1, 1, 1}
+  black = {0, 0, 0}
 
   -- scene setup
-  love.graphics.setBackgroundColor(primaryColor)
+  love.graphics.setBackgroundColor(white)
   --love.graphics.setBackgroundColor(0.1, 0, 0)
-  love.window.setTitle("Untitled flower clone") 
+  love.window.setTitle("Roots") 
 
   love.window.setMode(1000, 240, 
     {
-      highdpi = true, --for retina displays
-      msaa = 4 -- antialias
+      highdpi = false, --?
+      msaa = 0 -- antialias
     })
   windowWidth, windowHeight = love.window.getMode()
 
-  tileSize = 10
-  gridWidth = 100
-  gridHeight = 15
-  gridStartingY = 90
+  tileSize = 20
+  gridWidth = 50
+  gridHeight = 7
+  gridStartingY = 100
+
+  n0 = love.graphics.newImage("images/n0.png")
+  n1 = love.graphics.newImage("images/n1.png")
+  n2 = love.graphics.newImage("images/n2.png")
+  n3 = love.graphics.newImage("images/n3.png")
+  n4 = love.graphics.newImage("images/n4.png")
+  n5 = love.graphics.newImage("images/n5.png")
+  -- fog = love.graphics.newImage("images/fog.png")
 
   tiles = createTiles()
 
@@ -81,6 +88,11 @@ function love.draw()
   for index,tile in ipairs(tiles) do 
       tile:draw()
   end
+  
+  -- Draw Ground line
+  love.graphics.setColor(black)
+  love.graphics.rectangle("fill", 0, gridStartingY-1, windowWidth, 1)
+  love.graphics.setColor(white)
 
   -- TODO: Draw tiles
 
