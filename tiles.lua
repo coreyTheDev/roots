@@ -4,14 +4,16 @@ Nutrients = {
 	ONE=1,
 	TWO=2,
 	THREE=3,
-	FOUR=4
+	FOUR=4,
+  FIVE=5,
+  FOG=6
 }
 
 function createTiles()
 	createdTiles = {}
   for y=0, gridHeight do 
     for x=0, gridWidth do 
-      newTile = Tile(x, y, love.math.random(1, 4))
+      newTile = Tile(x, y, love.math.random(1, 6))
       table.insert(createdTiles, newTile)
     end
   end
@@ -28,8 +30,6 @@ function Tile:new(gridX, gridY, nutrientValue)
 end
 
 function Tile:draw()
-  love.graphics.setColor(1, 1, 1, 0.10)
-
   if self.tile == Nutrients.ONE then 
   	self:drawOne()
   elseif self.tile == Nutrients.TWO then 
@@ -38,27 +38,45 @@ function Tile:draw()
   	self:drawThree()
   elseif self.tile == Nutrients.FOUR then 
   	self:drawFour()
+  elseif self.tile == Nutrients.FIVE then 
+    self:drawFive()
+  elseif self.tile == Nutrients.FOG then 
+    self:drawFog()  
   end
-
-  love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Tile:drawOne()
-  love.graphics.setColor(1, 1, 1, 0.10)
-	love.graphics.rectangle("fill", self.x, self.y, tileSize, tileSize)
+  love.graphics.translate(self.x, self.y)
+	love.graphics.draw(n1, 0, 0)
+  love.graphics.origin()
 end
 
 function Tile:drawTwo()
-  love.graphics.setColor(1, 1, 1, 0.25)
-	love.graphics.rectangle("fill", self.x, self.y, tileSize, tileSize)
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(n2, 0, 0)
+  love.graphics.origin()
 end
 
 function Tile:drawThree()
-  love.graphics.setColor(1, 1, 1, 0.5)
-	love.graphics.rectangle("fill", self.x, self.y, tileSize, tileSize)
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(n3, 0, 0)
+  love.graphics.origin()
 end
 
 function Tile:drawFour()
-  love.graphics.setColor(1, 1, 1, 0.75)
-	love.graphics.rectangle("fill", self.x, self.y, tileSize, tileSize)
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(n4, 0, 0)
+  love.graphics.origin()
+end
+
+function Tile:drawFive()
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(n5, 0, 0)
+  love.graphics.origin()
+end
+
+function Tile:drawFog()
+  love.graphics.translate(self.x, self.y)
+  love.graphics.draw(fog, 0, 0)
+  love.graphics.origin()
 end

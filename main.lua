@@ -16,8 +16,8 @@ function love.load()
 
   love.window.setMode(1000, 240, 
     {
-      highdpi = true, --for retina displays
-      msaa = 4 -- antialias
+      highdpi = false, --?
+      msaa = 0 -- antialias
     })
   windowWidth, windowHeight = love.window.getMode()
 
@@ -25,6 +25,13 @@ function love.load()
   gridWidth = 100
   gridHeight = 15
   gridStartingY = 90
+
+  n1 = love.graphics.newImage("images/n1.png")
+  n2 = love.graphics.newImage("images/n2.png")
+  n3 = love.graphics.newImage("images/n3.png")
+  n4 = love.graphics.newImage("images/n4.png")
+  n5 = love.graphics.newImage("images/n5.png")
+  fog = love.graphics.newImage("images/fog.png")
 
   tiles = createTiles()
 
