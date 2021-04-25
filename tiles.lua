@@ -41,15 +41,7 @@ function Tile:draw()
   	self:drawFour()
   elseif self.tile == Nutrients.FIVE then 
     self:drawFive()
-  elseif self.tile == Nutrients.ZERO then 
-    self:drawFog()  
   end
-end
-
-function Tile:drawZero()
-  love.graphics.translate(self.x, self.y)
-  love.graphics.draw(n0, 0, 0)
-  love.graphics.origin()
 end
 
 function Tile:drawOne()
