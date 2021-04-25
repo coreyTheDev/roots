@@ -24,14 +24,19 @@ function love.load()
   gridWidth = 50
   gridHeight = 7
   gridStartingY = 100
+  
+  dropletYStart = -15
 
-  n0 = love.graphics.newImage("images/n0.png")
+  --nutrients
   n1 = love.graphics.newImage("images/n1.png")
   n2 = love.graphics.newImage("images/n2.png")
   n3 = love.graphics.newImage("images/n3.png")
   n4 = love.graphics.newImage("images/n4.png")
   n5 = love.graphics.newImage("images/n5.png")
-  -- fog = love.graphics.newImage("images/fog.png")
+
+  --water
+  droplets = {}
+  droplet1 = love.graphics.newImage("images/droplet1.png")
 
   tiles = createTiles()
 
@@ -60,6 +65,10 @@ function love.update(dt)
   if pathProgress > 1 then 
     pathProgress = 1
   end
+  
+  for i=1, #droplets do
+    droplets[i].y = droplets[i].y + 1
+  end
 end
 
 function love.keypressed(key, scancode, isrepeat) 
@@ -75,6 +84,8 @@ function love.keypressed(key, scancode, isrepeat)
       y = head.y
     }
     table.insert(rootNodes, headIncremented)
+  elseif key == "space" then
+    dropletSpawn()
   end
 
   -- if love.keyboard.isDown("w") then
@@ -82,6 +93,13 @@ function love.keypressed(key, scancode, isrepeat)
   -- -- elseif love.keyboard.isDown("s") then
   -- --   camera:move(0, DEBUG_VELOCITY_PIXELS_PER_SECOND * dt)
   -- end
+end
+
+function dropletSpawn()
+  droplet = {}
+  droplet.x = math.random(0, windowWidth)
+  droplet.y = dropletYStart
+  table.insert(droplets, droplet)
 end
 
 function love.draw()
@@ -93,6 +111,11 @@ function love.draw()
   love.graphics.setColor(black)
   love.graphics.rectangle("fill", 0, gridStartingY-1, windowWidth, 1)
   love.graphics.setColor(white)
+  
+  -- Draw Water drop
+  for i=1, #droplets do
+    love.graphics.draw(droplet1, droplets[i].x, droplets[i].y)
+  end
 
   -- TODO: Draw tiles
 
