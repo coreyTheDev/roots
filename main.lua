@@ -1,6 +1,5 @@
 io.stdout:setvbuf("no")
 
-
 function love.load()
   Object = require "classic"
   require "tiles"
@@ -40,17 +39,12 @@ function love.load()
   droplet1 = love.graphics.newImage("images/droplet1.png")
 
   tiles = createTiles()
-
-  
   root = Root()
 end
 
 function love.update(dt)
-  pathProgress = pathProgress + 0.01
-  if pathProgress > 1 then 
-    pathProgress = 1
-  end
-  
+  root:update(dt)
+
   for i=1, #droplets do
     droplets[i].y = droplets[i].y + 1
   end
@@ -58,30 +52,10 @@ end
 
 function love.keypressed(key, scancode, isrepeat) 
   root:handleInput(key)
-  if key == "s" or key == "down" then
-    headIncremented = {
-      x = head.x,
-      y = math.min(head.y + 1, gridHeight)
-    }
-    table.insert(rootNodes, headIncremented)
-  elseif key == "a" or key == "left" then
-    headIncremented = {
-      x = math.max(0, head.x - 1),
-      y = head.y
-    }
-    table.insert(rootNodes, headIncremented)
-  elseif key == "space" then
+  if key == "space" then
     dropletSpawn()
   end
-
-  -- if love.keyboard.isDown("w") then
-  --   camera:move(0, -DEBUG_VELOCITY_PIXELS_PER_SECOND * dt)
-  -- -- elseif love.keyboard.isDown("s") then
-  -- --   camera:move(0, DEBUG_VELOCITY_PIXELS_PER_SECOND * dt)
-  -- end
-  root:update(dt)
 end
-
 
 function dropletSpawn()
   droplet = {}
@@ -105,32 +79,14 @@ function love.draw()
     love.graphics.draw(droplet1, droplets[i].x, droplets[i].y)
   end
 
-  -- TODO: Draw tiles
-
-  -- love.graphics.arc("line", "open", 200, 100, 10, math.pi / 2, math.pi, 30)
-  -- love.graphics.arc("line", "open", 200, 100, 20, math.pi, 0, 30)
-  -- love.graphics.arc("line", "open", 200, 150, 20, math.pi, math.pi / 2, 30)
-  -- love.graphics.arc("line", "open", 200, 200, 20, math.pi, 3 * math.pi / 2, 30)
-  -- love.graphics.arc("fill", "open", 240, 100, 20, -math.pi, 0, 30)
-  -- 10 x 10
-  -- 100 x 15 - underground grid
-  -- aka 1000 x 150 pixels
---   curvePoints = {}
-  -- for index,node in ipairs(rootNodes) do 
-  --   print("adding node.x: ", (node.x * tileSize)," - node.y: ", (gridStartingY + node.y * tileSize))
-  --   table.insert(curvePoints, node.x * tileSize)
-  --   table.insert(curvePoints, gridStartingY + node.y * tileSize)
-  -- end
-
--- print{curvePoints}
-
-  -- curve = love.math.newBezierCurve({25,25,35,50,45,25,55,0,75,25,85,50})
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 
-  -- coordinates = curve:render()
+  love.graphics.setColor(0, 0, 0, alpha)  
+  love.graphics.setLineWidth(4)
   love.graphics.line(coordinates)
-  -- love.graphics.line(400, 100, 400, 150, 420, 200)
-  -- love.graphics.arc("line", "open", 300, 100, 100, math.pi, math.pi / 2, 15)
-  -- love.graphics.arc("line", "open", 300, 100, 100, math.pi, math.pi / 2, 15)
+
+  love.graphics.setColor(1, 1, 1, alpha)
+  love.graphics.setLineWidth(2)
+  love.graphics.line(coordinates)
 end

@@ -1,7 +1,7 @@
 Root = Object:extend()
 
 function Root:new()
-	self.nodes = { RootNode(50, 1), RootNode(50, 2), RootNode(51, 2) }
+	self.nodes = { RootNode(25, 1), RootNode(25, 2), RootNode(26, 2) }
 	self.x = x
 	self.y = y
 	self.pathProgress = 0.025
