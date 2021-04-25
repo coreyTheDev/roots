@@ -25,7 +25,10 @@ function love.load()
   gridHeight = 7
   gridStartingY = 100
   
-  dropletYStart = -15
+  dropletHeight = 15
+  dropletTick = 0
+  dropletTimer = math.random(0, 2)
+  rainfall = 8 --controls how heavy its raining
 
   --nutrients
   n1 = love.graphics.newImage("images/n1.png")
@@ -36,7 +39,7 @@ function love.load()
 
   --water
   droplets = {}
-  droplet1 = love.graphics.newImage("images/droplet1.png")
+  dropletGraphic = love.graphics.newImage("images/droplet.png")
 
   tiles = createTiles()
   root = Root()
@@ -45,26 +48,44 @@ end
 function love.update(dt)
   root:update(dt)
 
-  for i=1, #droplets do
-    droplets[i].y = droplets[i].y + 1
+  --call droplets randomly
+  dropletTick = dropletTick + (dt * rainfall)
+  if dropletTick > dropletTimer then
+    dropletSpawn()
+    dropletTimer = math.random(1, math.random(2, 4))
+    dropletTick = 0
+  end
+
+  --update droplet positions
+  for i,v in ipairs(droplets) do
+    if v.y < (gridStartingY - dropletHeight) then
+      v.y = v.y + 1
+    else
+      --play musical tone
+      tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
+      tone:setVolume(0.8)
+      tone:play()
+
+      table.remove(droplets, i)
+    end 
   end
 end
 
 function love.keypressed(key, scancode, isrepeat) 
   root:handleInput(key)
-  if key == "space" then
-    dropletSpawn()
-  end
 end
 
 function dropletSpawn()
   droplet = {}
-  droplet.x = math.random(0, windowWidth)
-  droplet.y = dropletYStart
+  droplet.x = math.random(1, gridWidth)
+  droplet.musicIndex = droplet.x
+  droplet.x = (droplet.x * tileSize) - 15
+  droplet.y = -dropletHeight
   table.insert(droplets, droplet)
 end
 
 function love.draw()
+  -- Draw tiles
   for index,tile in ipairs(tiles) do 
       tile:draw()
   end
@@ -76,7 +97,7 @@ function love.draw()
   
   -- Draw Water drop
   for i=1, #droplets do
-    love.graphics.draw(droplet1, droplets[i].x, droplets[i].y)
+    love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
   end
 
   curve = love.math.newBezierCurve(root:toCoordinates())
