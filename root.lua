@@ -19,7 +19,7 @@ end
 
 function Root:update(dt)
 	self.pathProgress = self.pathProgress + (self.pathAnimationConstant * dt)
-	print("path progress", self.pathProgress)
+	-- print("path progress", self.pathProgress)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end
@@ -31,30 +31,30 @@ function Root:handleInput(key)
 		if head.y + 1 <= gridHeight then 
   		table.insert(self.nodes, RootNode(head.x, head.y + 1))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
-  		print("self.pathProgress = ", self.pathProgress)
+  		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "a" or key == "left" then
   	if head.x - 1 >= 1 then 
   		table.insert(self.nodes, RootNode(head.x - 1, head.y))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
-  		print("self.pathProgress = ", self.pathProgress)
+  		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "d" or key == "right" then
   	if head.x + 1 <= gridWidth then 
   		table.insert(self.nodes, RootNode(head.x + 1, head.y))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
-  		print("self.pathProgress = ", self.pathProgress)
+  		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "w" or key == "up" then
 		if head.y - 1 >= 1 then 
   		table.insert(self.nodes, RootNode(head.x, head.y - 1))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
-  		print("self.pathProgress = ", self.pathProgress)
+  		-- print("self.pathProgress = ", self.pathProgress)
   	end
   end
 
   self.pathAnimationConstant = 1.0/#self.nodes
-  print(self.pathAnimationConstant)
+  -- print(self.pathAnimationConstant)
 end
 
 RootNode = Object:extend()

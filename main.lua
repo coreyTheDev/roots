@@ -41,13 +41,14 @@ function love.load()
   droplets = {}
   dropletGraphic = love.graphics.newImage("images/droplet.png")
 
-  tiles = createTiles()
+  tileManager = TileManager()
   root = Root()
 end
 
 function love.update(dt)
+  -- every second move any 5 tiles down by one
   root:update(dt)
-
+  tileManager:update(dt)
   --call droplets randomly
   dropletTick = dropletTick + (dt * rainfall)
   if dropletTick > dropletTimer then
@@ -57,18 +58,22 @@ function love.update(dt)
   end
 
   --update droplet positions
-  for i,v in ipairs(droplets) do
-    if v.y < (gridStartingY - dropletHeight) then
-      v.y = v.y + 1
-    else
-      --play musical tone
-      tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
-      tone:setVolume(0.8)
-      tone:play()
+  -- for i,v in ipairs(droplets) do
+  --   if v.y < (gridStartingY - dropletHeight) then
+  --     v.y = v.y + 1
+  --   else
+  --     --play musical tone
+  --     tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
+  --     tone:setVolume(0.8)
+  --     tone:play()
 
-      table.remove(droplets, i)
-    end 
-  end
+  --     table.remove(droplets, i)
+
+  --     -- update tile
+  --     indexOfDroplet = (v.x + 15) / tileSize
+  --     tileManager:tileHit(indexOfDroplet)
+  --   end
+  -- end
 end
 
 function love.keypressed(key, scancode, isrepeat) 
@@ -85,10 +90,7 @@ function dropletSpawn()
 end
 
 function love.draw()
-  -- Draw tiles
-  for index,tile in ipairs(tiles) do 
-      tile:draw()
-  end
+  tileManager:draw()
   
   -- Draw Ground line
   love.graphics.setColor(black)
@@ -96,9 +98,9 @@ function love.draw()
   love.graphics.setColor(white)
   
   -- Draw Water drop
-  for i=1, #droplets do
-    love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
-  end
+  -- for i=1, #droplets do
+  --   love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
+  -- end
 
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
