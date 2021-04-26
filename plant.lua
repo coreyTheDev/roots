@@ -10,7 +10,6 @@ function Plant:new()
     RootNode(510, gridStartingY - 30),
     RootNode(500, gridStartingY - 35), 
     RootNode(490, gridStartingY - 45),
-
     RootNode(480, gridStartingY - 50), 
     RootNode(475, gridStartingY - 55),
     RootNode(490, gridStartingY - 58), 
