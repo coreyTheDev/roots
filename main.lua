@@ -6,6 +6,7 @@ function love.load()
   require "root"
   require "rain"
   require "forest"
+  require "plant"
 
   white = {1, 1, 1}
   black = {0, 0, 0}
@@ -74,11 +75,13 @@ function love.load()
 
   tileManager = TileManager()
   root = Root()
+  plant = Plant()
 end
 
 function love.update(dt)
   -- every second move any 5 tiles down by one
   root:update(dt)
+  plant:update(dt)
   tileManager:update(dt)
   --call droplets randomly
   dropletTick = dropletTick + (dt * rainfall)
@@ -97,7 +100,7 @@ function love.update(dt)
       --play musical tone
       tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
       tone:setVolume(math.random(0.4, 0.5))
-      tone:play()
+      -- tone:play()
       
       -- add Splash graphic in same position
       splashSpawn(v.x, v.y)
@@ -129,6 +132,7 @@ function love.keypressed(key, scancode, isrepeat)
     munch = love.audio.newSource("audio/munch.wav", "static")
     munch:setVolume(0.5)
     munch:play()
+    plant:handleFoodConsumed()
   end
   
   -- used to move the intro title card forward to the tutorial
@@ -166,9 +170,9 @@ function love.draw()
   end
   
   -- Draw Title
-  if introIndex <= 3 then
-    love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
-  end 
+  -- if introIndex <= 3 then
+  --   love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
+  -- end 
   
   -- Draw Water drop
   for i,v in ipairs(droplets) do
@@ -183,6 +187,32 @@ function love.draw()
   end
   
   -- Draw Root
+  -- plantPoints = {
+  --   490, gridStartingY,
+  --   500, gridStartingY - 5,
+  --   490, gridStartingY - 10,
+  --   480, gridStartingY - 15,
+
+  --   490, gridStartingY - 25,
+  --   510, gridStartingY - 30,
+  --   500, gridStartingY - 35,
+  --   490, gridStartingY - 45,
+  -- }
+  plantCurve = love.math.newBezierCurve(plant:toCoordinates())
+  plantCoordinates = plantCurve:renderSegment(0.0, plant.pathProgress, 2)
+
+  love.graphics.setColor(0, 0, 0, alpha)  
+  love.graphics.setLineWidth(2)
+  love.graphics.setLineStyle("rough")
+  love.graphics.line(plantCoordinates)
+
+  
+
+  
+  -- love.graphics.arc( "line", "open", 500, gridStartingY, 20, math.pi, 1.5 * math.pi, 5)
+
+  -- print("# root line coordinates: ", #coordinates)
+
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 
