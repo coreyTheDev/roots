@@ -6,6 +6,7 @@ function love.load()
   require "root"
   require "rain"
   require "forest"
+  require "heart"
 
   white = {1, 1, 1}
   black = {0, 0, 0}
@@ -48,6 +49,7 @@ function love.load()
   n4 = love.graphics.newImage("images/n4.png")
   n5 = love.graphics.newImage("images/n5.png")
   heart = love.graphics.newImage("images/heart.png")
+  heartOutline = love.graphics.newImage("images/heart-outline.png")
 
   --water
   droplets = {}
@@ -67,6 +69,8 @@ function love.load()
   --forest
   forest = {}
   forestSize = 150
+  
+  floatingHearts = {}
   
   for i=1, forestSize do
     forestSpawn()
@@ -119,13 +123,37 @@ function love.update(dt)
     end
   end
   
+  --update heart positions
+  for i,v in ipairs(floatingHearts) do
+    if v.y > -20 then
+      v.acc = v.acc + dt
+      v.y = v.y - (dt*100)*v.acc
+      if v.variant == 1 then
+        v.x = v.x + (dt*math.random(30, 60))
+      else
+        v.x = v.x - (dt*math.random(30, 60))
+      end
+    else
+      table.remove(floatingHearts, i)
+    end
+  end
+  
 end
 
 
 function love.keypressed(key, scancode, isrepeat) 
   root:handleInput(key)
   
+  --sound of not eating
   if key == "space" then
+    cancel = love.audio.newSource("audio/cancel.wav", "static")
+    cancel:setVolume(0.5)
+    cancel:play()
+  end
+  
+  --sound of eating
+  if key == "e" then
+    heartSpawn()
     munch = love.audio.newSource("audio/munch.wav", "static")
     munch:setVolume(0.5)
     munch:play()
@@ -199,5 +227,10 @@ function love.draw()
   love.graphics.line(coordinates)
   
   -- Draw Heart
-  love.graphics.draw(heart, (windowWidth/2) - tileSize+2, gridStartingY+1) 
+  love.graphics.draw(heart, (windowWidth/2) - tileSize+2, gridStartingY+1)
+  
+  -- Draw Floating Hearts
+  for i,v in ipairs(floatingHearts) do
+    love.graphics.draw(heartOutline, v.x, v.y) 
+  end
 end
