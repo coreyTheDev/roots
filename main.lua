@@ -51,6 +51,9 @@ function love.load()
   n5 = love.graphics.newImage("images/n5.png")
   heart = love.graphics.newImage("images/heart.png")
   heartOutline = love.graphics.newImage("images/heart-outline.png")
+  
+  --leaf
+  leaf = love.graphics.newImage("images/leaf.png")
 
   --water
   droplets = {}
@@ -226,21 +229,24 @@ function love.draw()
   --   500, gridStartingY - 35,
   --   490, gridStartingY - 45,
   -- }
+  
+  -- Draw Plant
   plantCurve = love.math.newBezierCurve(plant:toCoordinates())
   plantCoordinates = plantCurve:renderSegment(0.0, plant.pathProgress, 2)
 
   love.graphics.setColor(0, 0, 0, alpha)  
-  love.graphics.setLineWidth(2)
+  love.graphics.setLineWidth(5)
   love.graphics.setLineStyle("rough")
   love.graphics.line(plantCoordinates)
 
-  
+  plant:draw()
 
   
   -- love.graphics.arc( "line", "open", 500, gridStartingY, 20, math.pi, 1.5 * math.pi, 5)
 
   -- print("# root line coordinates: ", #coordinates)
 
+  -- Draw Root
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 

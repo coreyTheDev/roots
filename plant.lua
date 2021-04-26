@@ -2,7 +2,7 @@ Plant = Object:extend()
 
 function Plant:new()
 	self.nodes = { 
-    RootNode(490, gridStartingY), 
+    RootNode(487, gridStartingY), 
     RootNode(500, gridStartingY - 5), 
     RootNode(490, gridStartingY - 10),
     RootNode(480, gridStartingY - 15), 
@@ -44,7 +44,45 @@ function Plant:update(dt)
   end
 end
 
+function Plant:draw()
+  -- Draw Head
+  if self.foodConsumed > 50 then
+    love.graphics.setColor(black)
+    love.graphics.circle("fill", (windowWidth/2) - 9, 23, 18)
+    love.graphics.setColor(white)
+    love.graphics.setLineWidth(1)
+    love.graphics.circle("line", (windowWidth/2) - 9, 23, 5, 10)
+    love.graphics.circle("line", (windowWidth/2) - 9, 23, 16, 18)
+  end
+  
+  -- Draw Leaves
+  if self.foodConsumed > 10 then
+    love.graphics.setColor(white)
+    love.graphics.draw(leaf, (windowWidth/2) - 8, 78)
+  end
+  
+  if self.foodConsumed > 20 then
+    love.graphics.setColor(white)
+    love.graphics.draw(leaf, (windowWidth/2) - 6, 74, 0, -1, -1)
+  end
+  
+  if self.foodConsumed > 30 then
+    love.graphics.setColor(white)
+    love.graphics.draw(leaf, (windowWidth/2) - 11, 50)
+  end
+  
+  if self.foodConsumed > 40 then
+    love.graphics.setColor(white)
+    love.graphics.draw(leaf, (windowWidth/2) - 9, 43, 0, -1, -1)
+    love.graphics.draw(leaf, (windowWidth/2) - 9, 36)
+  end
+  
+
+
+end
+
 function Plant:handleFoodConsumed()
+  self.foodConsumed = self.foodConsumed + 1
   self.pathProgress = self.pathProgress + (self.foodConsumptionPathProgress)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
