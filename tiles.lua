@@ -1,5 +1,6 @@
 TileManager = Object:extend()
 kManagerUpdateInterval = 2
+kTileFallRate = 2
 
 function TileManager:new()
   self.timeSinceLastUpdate = 0
@@ -8,17 +9,6 @@ function TileManager:new()
   for x=1,50 do 
     maxTileValueForColumn = -1
     maxIndexForColumn = -1
-
-    -- for y=1,gridHeight do 
-    --   currentTileIndex = x + (y - 1) * gridWidth
-
-    --   print("computing current tile index of: ", currentTileIndex, "value: ", self.tiles[currentTileIndex].tile, " max tile value: ", maxTileValueForColumn)
-    --   if self.tiles[currentTileIndex].tile > maxTileValueForColumn then 
-    --     -- print("current tile index greater than maxTileValueForColumn", maxTileValueForColumn)
-    --     maxTileValueForColumn = self.tiles[currentTileIndex].tile
-    --     maxIndexForColumn = currentTileIndex
-    --   end
-    -- end 
     print("calculate`d max index for row: ", x, " to be: ", maxIndexForColumn)
     updateTable = {
       timeSinceLastUpdate = 0,
@@ -29,60 +19,60 @@ function TileManager:new()
     }
     table.insert(self.highestRowByColumn, updateTable)
   end
-  -- find highest values in columns
 end
 
 function TileManager:update(dt)
   self.timeSinceLastUpdate = self.timeSinceLastUpdate + dt
+  for i,v in ipairs(self.highestRowByColumn) do
+    v.timeSinceLastUpdate = v.timeSinceLastUpdate + dt
+  end
+
   if self.timeSinceLastUpdate > kManagerUpdateInterval then
-    print("updating tile manager")
-    print("number of tiles: ", #self.tiles)
+    -- print("updating tile manager")
+    -- print("number of tiles: ", #self.tiles)
     for x=1,gridWidth do 
       updateTableForThisColumn = self.highestRowByColumn[x]
       currentDropRow = updateTableForThisColumn.currentRow
-
-      if currentDropRow > 0 and currentDropRow < updateTableForThisColumn.finalRowForDrop then 
+      columnLastUpdate = updateTableForThisColumn.timeSinceLastUpdate
+      if columnLastUpdate > kTileFallRate and currentDropRow > 0 then 
+        if currentDropRow < updateTableForThisColumn.finalRowForDrop then 
           -- move drop down
           -- update current drop to 4
-        print("current index: ", currentIndex)
-        print("current drop row: ", currentDropRow)
-        currentIndex = updateTableForThisColumn.globalIndex
-        self.tiles[currentIndex].tile = 4
-        nextIndex = currentIndex + gridWidth
-        self.tiles[nextIndex].tile = 5
-        self.highestRowByColumn[x] = {
-          timeSinceLastUpdate = 0,
-          globalIndex = nextIndex, --maxIndexForColumn
-          finalRowForDrop = updateTableForThisColumn.finalRowForDrop,
-          currentRow = currentDropRow + 1,
-        }
-        
+          -- print("current index: ", currentIndex)
+          -- print("current drop row: ", currentDropRow)
+          currentIndex = updateTableForThisColumn.globalIndex
+          self.tiles[currentIndex].tile = 3
+          nextIndex = currentIndex + gridWidth
+          self.tiles[nextIndex].tile = 5
+          self.highestRowByColumn[x] = {
+            timeSinceLastUpdate = 0,
+            globalIndex = nextIndex, --maxIndexForColumn
+            finalRowForDrop = updateTableForThisColumn.finalRowForDrop,
+            currentRow = currentDropRow + 1,
+          }
           -- reset
-      elseif currentDropRow > 0 and currentDropRow == updateTableForThisColumn.finalRowForDrop then 
-        currentIndex = updateTableForThisColumn.globalIndex
-        -- print("current index: ", currentIndex)
-        self.tiles[currentIndex].tile = 4
-        self.highestRowByColumn[x] = {
-          timeSinceLastUpdate = 0,
-          globalIndex = -1, --maxIndexForColumn
-          finalRowForDrop = -1,
-          currentRow = -1,
-        }
+        elseif currentDropRow == updateTableForThisColumn.finalRowForDrop then 
+          currentIndex = updateTableForThisColumn.globalIndex
+          self.tiles[currentIndex].tile = 4
+          self.highestRowByColumn[x] = {
+            timeSinceLastUpdate = 0,
+            globalIndex = currentIndex, --maxIndexForColumn
+            finalRowForDrop = -1,
+            currentRow = currentDropRow,
+          }
 
+        else
+          currentIndex = updateTableForThisColumn.globalIndex
+          updatingValue = self.tiles[currentIndex].tile
+          tileFalloffSeconds = {7,7,5,4,3}
+          if columnLastUpdate > tileFalloffSeconds[updatingValue] then 
+            self:decrementTile(currentIndex, updatingValue)
+          end
+        end
       end
     end
 
 
-      -- tileToUpdate = updateTableForThisColumn.highestIndex
-      -- updatingValue = self.tiles[tileToUpdate].tile
-      -- lastUpdate = updateTableForThisColumn.timeSinceLastUpdate + self.timeSinceLastUpdate
-      -- tileFalloffSeconds = {7,7,5,4,3}
-      -- if lastUpdate > tileFalloffSeconds[updatingValue] then 
-      --   self:decrementTile(tileToUpdate, updatingValue)
-      -- else 
-      --   self.highestRowByColumn[x].timeSinceLastUpdate = lastUpdate
-      -- end
-    -- end
 
     self.timeSinceLastUpdate = 0
   end
@@ -133,7 +123,7 @@ end
 
 function TileManager:tileHit(indexOfDroplet) 
   randomEnd = math.random(2, gridHeight)
-  print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
+  -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
   self.tiles[indexOfDroplet].tile = 5
   self.highestRowByColumn[indexOfDroplet] = {
     globalIndex = indexOfDroplet,
@@ -159,9 +149,9 @@ function createTiles()
 	createdTiles = {}
   for y=1, gridHeight do 
     for x=1, gridWidth do 
-      newTile = Tile(x, y, love.math.random(1, 3))
+      newTile = Tile(x, y, love.math.random(1, 2))
       table.insert(createdTiles, newTile)
-      print("created tile: ",#createdTiles, " value: ", newTile.tile)
+      -- print("created tile: ",#createdTiles, " value: ", newTile.tile)
     end
   end
 

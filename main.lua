@@ -91,8 +91,7 @@ function love.update(dt)
   dropletTick = dropletTick + (dt * rainfall)
   if dropletTick > dropletTimer then
     dropletSpawn()
-    dropletTimer = 5 -- math.random(1, math.random(2, 4))
-    
+    dropletTimer = math.random(1, math.random(2, 4))
     dropletTick = 0
   end
 
