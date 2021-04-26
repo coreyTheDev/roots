@@ -146,7 +146,6 @@ function love.keypressed(key, scancode, isrepeat)
   
   --sound of not eating
   if key == "space" then
-    
     cancel = love.audio.newSource("audio/cancel.wav", "static")
     cancel:setVolume(0.5)
     cancel:play()
