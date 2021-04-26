@@ -10,7 +10,7 @@ function dropletSpawn()
   droplet = {}
   droplet.x = math.random(1, gridWidth)
   droplet.musicIndex = droplet.x
-  droplet.x = (droplet.x * tileSize) - 15
+  droplet.x = (droplet.x * tileSize) - 15 --limit it to and center it on tile
   droplet.y = -dropletHeight
   droplet.acc = dropletAcc
   table.insert(droplets, droplet)
