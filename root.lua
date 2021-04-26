@@ -27,26 +27,27 @@ end
 
 function Root:handleInput(key)
 	head = self.nodes[#self.nodes]
+  previous = self.nodes[#self.nodes - 1]
 	if key == "s" or key == "down" then
-		if head.y + 1 <= gridHeight then 
+		if head.y + 1 <= gridHeight and (head.y + 1) ~= previous.y then 
   		table.insert(self.nodes, RootNode(head.x, head.y + 1))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "a" or key == "left" then
-  	if head.x - 1 >= 1 then 
+  	if head.x - 1 >= 1 and (head.x - 1) ~= previous.x then 
   		table.insert(self.nodes, RootNode(head.x - 1, head.y))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "d" or key == "right" then
-  	if head.x + 1 <= gridWidth then 
+  	if head.x + 1 <= gridWidth and (head.x + 1) ~= previous.x then 
   		table.insert(self.nodes, RootNode(head.x + 1, head.y))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
   	end
   elseif key == "w" or key == "up" then
-		if head.y - 1 >= 1 then 
+		if head.y - 1 >= 1 and (head.y - 1) ~= previous.y then 
   		table.insert(self.nodes, RootNode(head.x, head.y - 1))
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
