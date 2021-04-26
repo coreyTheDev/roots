@@ -163,6 +163,11 @@ function love.draw()
     love.graphics.setStencilTest()
   end
   
+  -- Draw Title
+  if introIndex <= 3 then
+    love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
+  end 
+  
   -- Draw Water drop
   for i,v in ipairs(droplets) do
     if v.y < (gridStartingY - (dropletHeight)) then
@@ -174,11 +179,6 @@ function love.draw()
   for i,v in ipairs(splashes) do
     love.graphics.draw(splashGraphic, v.x, v.y) 
   end
-  
-  -- Draw Title
-  if introIndex <= 3 then
-    love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
-  end 
   
   -- Draw Root
   curve = love.math.newBezierCurve(root:toCoordinates())
