@@ -30,6 +30,9 @@ function love.load()
   gridWidth = 50
   gridHeight = 7
   gridStartingY = 100
+  
+  --font
+  font = love.graphics.newFont("fonts/press-start.ttf", 9)
 
   --title and tutorial
   title = love.graphics.newImage("images/title.png")
