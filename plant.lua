@@ -21,6 +21,7 @@ function Plant:new()
 	self.x = 490
 	self.y = gridStartingY
   self.foodConsumed = 0 
+  self.flowerGrown = false
 
 	self.pathProgress = math.max(self.foodConsumed, 0.1)
 	self.foodConsumptionPathProgress = (1.0/ (4 * #self.nodes))
@@ -41,6 +42,13 @@ function Plant:update(dt)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end
+  
+  if self.foodConsumed == 51 and self.flowerGrown == false then
+    self.flowerGrown = true
+    flower = love.audio.newSource("audio/flower.wav", "static")
+    flower:setVolume(0.75)
+    flower:play()
+  end
 end
 
 function Plant:draw()
@@ -52,6 +60,9 @@ function Plant:draw()
     love.graphics.setLineWidth(1)
     love.graphics.circle("line", (windowWidth/2) - 9, 23, 5, 10)
     love.graphics.circle("line", (windowWidth/2) - 9, 23, 16, 18)
+    love.graphics.setColor(black)
+    love.graphics.setFont(font)
+    love.graphics.print("NICE GROWING!", 520, 85)
   end
   
   -- Draw Leaves
