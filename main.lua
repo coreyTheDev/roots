@@ -4,13 +4,14 @@ function love.load()
   Object = require "classic"
   require "tiles"
   require "root"
+  require "rain"
+  require "forest"
 
   white = {1, 1, 1}
   black = {0, 0, 0}
 
   -- scene setup
   love.graphics.setBackgroundColor(white)
-  --love.graphics.setBackgroundColor(0.1, 0, 0)
   love.window.setTitle("Roots") 
 
   love.window.setMode(1000, 240, 
@@ -19,16 +20,26 @@ function love.load()
       msaa = 0 -- antialias
     })
   windowWidth, windowHeight = love.window.getMode()
+  
+  -- setting a seed seems to be required to actually get randomization during dev?
+  math.randomseed(love.timer.getTime())
 
   tileSize = 20
   gridWidth = 50
   gridHeight = 7
   gridStartingY = 100
+
+  --title and tutorial
+  title = love.graphics.newImage("images/title.png")
+  titleWidth = title:getWidth()
+  titleHeight = title:getHeight()
+  titlePadding = 40
   
-  dropletHeight = 15
-  dropletTick = 0
-  dropletTimer = math.random(0, 2)
-  rainfall = 8 --controls how heavy its raining
+  credits = love.graphics.newImage("images/credits.png")
+  tutorial = love.graphics.newImage("images/tutorial.png")
+  
+  introIndex = 1
+  intro = {title, credits, tutorial}
 
   --nutrients
   n1 = love.graphics.newImage("images/n1.png")
@@ -36,10 +47,30 @@ function love.load()
   n3 = love.graphics.newImage("images/n3.png")
   n4 = love.graphics.newImage("images/n4.png")
   n5 = love.graphics.newImage("images/n5.png")
+  heart = love.graphics.newImage("images/heart.png")
 
   --water
   droplets = {}
   dropletGraphic = love.graphics.newImage("images/droplet.png")
+  dropletHeight = dropletGraphic:getHeight()
+  dropletAcc = 0.005 --controls how quickly the droplet speeds up over (lower is faster)
+  dropletTick = 0
+  dropletTimer = math.random(0, 2)
+  rainfall = 5 --controls how heavy its raining
+  
+  --splashes
+  splashes = {}
+  splashGraphic = love.graphics.newImage("images/splash.png")
+  splashTick = 0
+  splashTimer = 0.1 --controls how long the splash shows for
+  
+  --forest
+  forest = {}
+  forestSize = 150
+  
+  for i=1, forestSize do
+    forestSpawn()
+  end
 
   tileManager = TileManager()
   root = Root()
@@ -60,13 +91,18 @@ function love.update(dt)
   --update droplet positions
   for i,v in ipairs(droplets) do
     if v.y < (gridStartingY - dropletHeight) then
-      v.y = v.y + 1
+      v.acc = v.acc + dt
+      v.y = v.y + (dt*100)*v.acc
     else
       --play musical tone
       tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
-      tone:setVolume(0.8)
+      tone:setVolume(math.random(0.4, 0.5))
       tone:play()
+      
+      -- add Splash graphic in same position
+      splashSpawn(v.x, v.y)
 
+      --remove Droplet graphic from table
       table.remove(droplets, i)
 
       -- update tile
@@ -74,20 +110,37 @@ function love.update(dt)
       tileManager:tileHit(indexOfDroplet)
     end
   end
+  
+  -- show Splash for a set, short amount of time
+  for i,v in ipairs(splashes) do
+    v.timer = v.timer - dt
+    if v.timer < 0 then
+      table.remove(splashes, i)
+    end
+  end
+  
 end
+
 
 function love.keypressed(key, scancode, isrepeat) 
   root:handleInput(key)
+  
+  if key == "space" then
+    munch = love.audio.newSource("audio/munch.wav", "static")
+    munch:setVolume(0.5)
+    munch:play()
+  end
+  
+  -- used to move the intro title card forward to the tutorial
+  if introIndex < 3 then
+    introIndex = introIndex + 1
+    titleWidth = intro[introIndex]:getWidth()
+    titleHeight = intro[introIndex]:getHeight()
+  elseif introIndex == 3 then
+    introIndex = introIndex + 1
+  end
 end
 
-function dropletSpawn()
-  droplet = {}
-  droplet.x = math.random(1, gridWidth)
-  droplet.musicIndex = droplet.x
-  droplet.x = (droplet.x * tileSize) - 15
-  droplet.y = -dropletHeight
-  table.insert(droplets, droplet)
-end
 
 function love.draw()
   tileManager:draw()
@@ -97,19 +150,54 @@ function love.draw()
   love.graphics.rectangle("fill", 0, gridStartingY-1, windowWidth, 1)
   love.graphics.setColor(white)
   
-  -- Draw Water drop
-  for i=1, #droplets do
-    love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
+  -- Draw Forest
+  for i,v in ipairs(forest) do
+    local function myStencilFunction()
+       love.graphics.rectangle("fill", v.x, v.y, v.width, v.height)
+    end
+    
+    love.graphics.stencil(myStencilFunction, "replace", 1)
+    love.graphics.setStencilTest("greater", 0)
+    
+    for i=0,5 do
+      love.graphics.draw(v.variant, v.x, v.y + (i*tileSize))
+    end
+    love.graphics.setStencilTest()
   end
--- 
+  
+  -- Draw Title
+  if introIndex <= 3 then
+    love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
+  end 
+  
+  -- Draw Water drop
+  for i,v in ipairs(droplets) do
+    if v.y < (gridStartingY - (dropletHeight)) then
+      love.graphics.draw(dropletGraphic, v.x, v.y)   
+    end
+  end
+  
+  -- Draw Splashes
+  for i,v in ipairs(splashes) do
+    love.graphics.draw(splashGraphic, v.x, v.y) 
+  end
+  
+  -- Draw Root
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 
+  love.graphics.setColor(1, 1, 1, alpha)  
+  love.graphics.setLineWidth(8)
+  love.graphics.line(coordinates)
+  
   love.graphics.setColor(0, 0, 0, alpha)  
-  love.graphics.setLineWidth(4)
+  love.graphics.setLineWidth(6)
   love.graphics.line(coordinates)
 
   love.graphics.setColor(1, 1, 1, alpha)
-  love.graphics.setLineWidth(2)
+  love.graphics.setLineWidth(3)
   love.graphics.line(coordinates)
+  
+  -- Draw Heart
+  love.graphics.draw(heart, (windowWidth/2) - tileSize+2, gridStartingY+1) 
 end
