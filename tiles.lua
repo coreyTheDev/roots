@@ -1,7 +1,7 @@
 TileManager = Object:extend()
 kManagerUpdateInterval = 0.5
 kTileFallRate = 0.5
-kHoldLength = 4
+kHoldLength = 3
 
 function TileManager:new()
   self.timeSinceLastUpdate = 0
@@ -144,7 +144,7 @@ end
 
 function TileManager:tileHit(indexOfDroplet) 
   randomPercentage = math.random(1,100)
-  if randomPercentage > 50 then 
+  if self.highestRowByColumn[indexOfDroplet].currentRow == -1 and randomPercentage > 50 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
 
