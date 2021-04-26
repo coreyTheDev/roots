@@ -104,7 +104,7 @@ function love.update(dt)
       --play musical tone
       tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
       tone:setVolume(math.random(0.4, 0.5))
-      -- tone:play()
+      tone:play()
       
       -- add Splash graphic in same position
       splashSpawn(v.x, v.y)
@@ -198,9 +198,9 @@ function love.draw()
   end
   
   -- Draw Title
-  -- if introIndex <= 3 then
-  --   love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
-  -- end 
+  if introIndex <= 3 then
+    love.graphics.draw(intro[introIndex], (windowWidth/2) - (titleWidth/2), (gridStartingY/2) - (titleHeight/2)) 
+  end 
   
   -- Draw Water drop
   for i,v in ipairs(droplets) do
