@@ -1,5 +1,5 @@
 TileManager = Object:extend()
-kManagerUpdateInterval = 1
+kManagerUpdateInterval = 2
 
 function TileManager:new()
   self.timeSinceLastUpdate = 0
@@ -20,7 +20,11 @@ function TileManager:new()
       end
     end 
     print("calculated max index for row: ", x, " to be: ", maxIndexForColumn)
-    table.insert(self.highestRowByColumn, maxIndexForColumn)
+    updateTable = {
+      timeSinceLastUpdate = 0,
+      highestIndex = maxIndexForColumn
+    }
+    table.insert(self.highestRowByColumn, updateTable)
   end
   -- find highest values in columns
 end
@@ -30,9 +34,16 @@ function TileManager:update(dt)
   if self.timeSinceLastUpdate > kManagerUpdateInterval then
     print("updating tile manager")
     for x=1,gridWidth do 
-      tileToUpdate = self.highestRowByColumn[x]
+      updateTableForThisColumn = self.highestRowByColumn[x]
+      tileToUpdate = updateTableForThisColumn.highestIndex
       updatingValue = self.tiles[tileToUpdate].tile
-      self:decrementTile(tileToUpdate, updatingValue)
+      lastUpdate = updateTableForThisColumn.timeSinceLastUpdate + self.timeSinceLastUpdate
+      tileFalloffSeconds = {7,7,5,4,3}
+      if lastUpdate > tileFalloffSeconds[updatingValue] then 
+        self:decrementTile(tileToUpdate, updatingValue)
+      else 
+        self.highestRowByColumn[x].timeSinceLastUpdate = lastUpdate
+      end
     end
 
     self.timeSinceLastUpdate = 0
@@ -62,49 +73,31 @@ function TileManager:decrementTile(globalIndex, currentValue)
   for i,tile in ipairs(tilesToUpdate) do 
     tile.tile = math.max(currentValue - 1, 1)
   end 
-  -- if currentValue is 5
 
-
-  -- if self.tile == Nutrients.ONE then 
-  --   self:drawOne()
-  -- elseif self.tile == Nutrients.TWO then 
-  --   self:drawTwo()
-  -- elseif self.tile == Nutrients.THREE then 
-  --   self:drawThree()
-  -- elseif self.tile == Nutrients.FOUR then 
-  --   self:drawFour()
-  -- elseif self.tile == Nutrients.FIVE then 
-  --   self:drawFive()
-  -- end
+  self.highestRowByColumn[column].timeSinceLastUpdate = 0
 end 
 
 function TileManager:calculateTilesToUpdate(globalIndex, currentValue, column, row)
   tilesToUpdate = {}
-  tileValues = {5,4,3,2,1}
+  tileValues = {7,7,5,3,1}
   numberToUpdate = tileValues[currentValue]
   table.insert(tilesToUpdate, self.tiles[globalIndex])
   for i=0,numberToUpdate do
     rowToUpdate = row + (i + 1)
     if rowToUpdate <= 7 then 
       globalIndexToUpdate = (rowToUpdate - 1) * 50 + globalIndex
-      table.insert(tilesToUpdate, self.tiles[globalIndex])
+      table.insert(tilesToUpdate, self.tiles[globalIndexToUpdate])
     end
   end
 
   return tilesToUpdate
-  -- 5 value - update self and 1 extra
-  -- 4 value - self and 2 extra
-  -- 3 value - self and 3 extra
-  -- 2 value - self and 4 extra
-  -- 1 value - self and 5 extra
-
-
-
 end
 
 function TileManager:tileHit(indexOfDroplet) 
   print("droplet hit at ", indexOfDroplet)
   self.tiles[indexOfDroplet].tile = 5
+  self.highestRowByColumn[indexOfDroplet].highestIndex = indexOfDroplet
+  self.highestRowByColumn[indexOfDroplet].timeSinceLastUpdate = 0
 end
 
 Tile = Object:extend()

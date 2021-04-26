@@ -58,22 +58,22 @@ function love.update(dt)
   end
 
   --update droplet positions
-  -- for i,v in ipairs(droplets) do
-  --   if v.y < (gridStartingY - dropletHeight) then
-  --     v.y = v.y + 1
-  --   else
-  --     --play musical tone
-  --     tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
-  --     tone:setVolume(0.8)
-  --     tone:play()
+  for i,v in ipairs(droplets) do
+    if v.y < (gridStartingY - dropletHeight) then
+      v.y = v.y + 1
+    else
+      --play musical tone
+      tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
+      tone:setVolume(0.8)
+      tone:play()
 
-  --     table.remove(droplets, i)
+      table.remove(droplets, i)
 
-  --     -- update tile
-  --     indexOfDroplet = (v.x + 15) / tileSize
-  --     tileManager:tileHit(indexOfDroplet)
-  --   end
-  -- end
+      -- update tile
+      indexOfDroplet = (v.x + 15) / tileSize
+      tileManager:tileHit(indexOfDroplet)
+    end
+  end
 end
 
 function love.keypressed(key, scancode, isrepeat) 
@@ -98,10 +98,10 @@ function love.draw()
   love.graphics.setColor(white)
   
   -- Draw Water drop
-  -- for i=1, #droplets do
-  --   love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
-  -- end
-
+  for i=1, #droplets do
+    love.graphics.draw(dropletGraphic, droplets[i].x, droplets[i].y)
+  end
+-- 
   curve = love.math.newBezierCurve(root:toCoordinates())
   coordinates = curve:renderSegment(0.0, root.pathProgress, 5)
 
