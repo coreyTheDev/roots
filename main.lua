@@ -149,18 +149,20 @@ function love.keypressed(key, scancode, isrepeat)
   
   --sound of not eating
   if key == "space" then
-    cancel = love.audio.newSource("audio/cancel.wav", "static")
-    cancel:setVolume(0.5)
-    cancel:play()
-  end
-  
-  --sound of eating
-  if key == "e" then
-    heartSpawn()
-    munch = love.audio.newSource("audio/munch.wav", "static")
-    munch:setVolume(0.5)
-    munch:play()
-    plant:handleFoodConsumed()
+    -- check if we are on a tile with a 5
+    currentHead = root.nodes[#root.nodes]
+    result = tileManager:eatNodeIfPossible(currentHead)
+    if result then 
+      heartSpawn()
+      munch = love.audio.newSource("audio/munch.wav", "static")
+      munch:setVolume(0.5)
+      munch:play()
+      plant:handleFoodConsumed()
+    else 
+      cancel = love.audio.newSource("audio/cancel.wav", "static")
+      cancel:setVolume(0.5)
+      cancel:play()
+    end
   end
   
   -- used to move the intro title card forward to the tutorial

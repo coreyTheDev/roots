@@ -121,6 +121,26 @@ function TileManager:calculateTilesToUpdate(globalIndex, currentValue, column, r
   return tilesToUpdate
 end
 
+function TileManager:eatNodeIfPossible(currentHead)
+    rowOffset = (currentHead.y - 1) * 50
+    columnOffset = currentHead.x
+    tileToEat = rowOffset + columnOffset
+    print("eating tile: ", tileToEat)
+    if self.tiles[tileToEat].tile == 5 then 
+      updateTable = {
+        timeSinceLastUpdate = 0,
+        globalIndex = -1, --maxIndexForColumn
+        finalRowForDrop = -1,
+        currentRow = -1,
+      }
+      self.tiles[tileToEat].tile = 2
+      self.highestRowByColumn[columnOffset] = updateTable
+      return true
+    else 
+      return false
+    end
+end
+
 function TileManager:tileHit(indexOfDroplet) 
   randomPercentage = math.random(1,100)
   if randomPercentage > 50 then 
