@@ -1,7 +1,7 @@
 TileManager = Object:extend()
 kManagerUpdateInterval = 0.5
 kTileFallRate = 0.5
-kHoldLength = 2
+kHoldLength = 4
 
 function TileManager:new()
   self.timeSinceLastUpdate = 0
@@ -128,14 +128,14 @@ function TileManager:eatNodeIfPossible(currentHead)
     tileToEat = rowOffset + columnOffset
     print("eating tile: ", tileToEat)
     if self.tiles[tileToEat].tile == 5 then 
-      updateTable = {
-        timeSinceLastUpdate = 0,
-        globalIndex = -1, --maxIndexForColumn
-        finalRowForDrop = -1,
-        currentRow = -1,
-      }
-      self.tiles[tileToEat].tile = 2
-      self.highestRowByColumn[columnOffset] = updateTable
+      -- updateTable = {
+      --   timeSinceLastUpdate = 0,
+      --   globalIndex = -1, --maxIndexForColumn
+      --   finalRowForDrop = -1,
+      --   currentRow = -1,
+      -- }
+      -- self.tiles[tileToEat].tile = 2
+      -- self.highestRowByColumn[columnOffset] = updateTable
       return true
     else 
       return false

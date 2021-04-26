@@ -18,7 +18,7 @@ function Root:toCoordinates()
 end
 
 function Root:update(dt)
-	self.pathProgress = self.pathProgress + (self.pathAnimationConstant * dt)
+	self.pathProgress = self.pathProgress + (self.pathAnimationConstant * 2 * dt)
 	-- print("path progress", self.pathProgress)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
@@ -28,6 +28,7 @@ end
 function Root:handleInput(key)
 	head = self.nodes[#self.nodes]
   previous = self.nodes[#self.nodes - 1]
+  self.pathAnimationConstant = 1.0/#self.nodes
 	if key == "s" or key == "down" then
 		if head.y + 1 <= gridHeight and (head.y + 1) ~= previous.y then 
   		table.insert(self.nodes, RootNode(head.x, head.y + 1))
@@ -54,7 +55,6 @@ function Root:handleInput(key)
   	end
   end
 
-  self.pathAnimationConstant = 1.0/#self.nodes
   -- print(self.pathAnimationConstant)
 end
 
