@@ -19,7 +19,7 @@ function TileManager:new()
         maxIndexForColumn = currentTileIndex
       end
     end 
-    print("calculated max index for row: ", x, " to be: ", maxIndexForColumn)
+    print("calculate`d max index for row: ", x, " to be: ", maxIndexForColumn)
     updateTable = {
       timeSinceLastUpdate = 0,
       highestIndex = maxIndexForColumn
