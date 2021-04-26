@@ -72,13 +72,14 @@ function love.load()
     forestSpawn()
   end
 
-  tiles = createTiles()
+  tileManager = TileManager()
   root = Root()
 end
 
 function love.update(dt)
+  -- every second move any 5 tiles down by one
   root:update(dt)
-
+  tileManager:update(dt)
   --call droplets randomly
   dropletTick = dropletTick + (dt * rainfall)
   if dropletTick > dropletTimer then
@@ -103,7 +104,11 @@ function love.update(dt)
 
       --remove Droplet graphic from table
       table.remove(droplets, i)
-    end 
+
+      -- update tile
+      indexOfDroplet = (v.x + 15) / tileSize
+      tileManager:tileHit(indexOfDroplet)
+    end
   end
   
   -- show Splash for a set, short amount of time
@@ -138,10 +143,7 @@ end
 
 
 function love.draw()
-  -- Draw Tiles
-  for index,tile in ipairs(tiles) do 
-      tile:draw()
-  end
+  tileManager:draw()
   
   -- Draw Ground line
   love.graphics.setColor(black)
