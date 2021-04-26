@@ -1,6 +1,7 @@
 TileManager = Object:extend()
-kManagerUpdateInterval = 2
-kTileFallRate = 2
+kManagerUpdateInterval = 0.5
+kTileFallRate = 0.5
+kHoldLength = 2
 
 function TileManager:new()
   self.timeSinceLastUpdate = 0
@@ -51,7 +52,7 @@ function TileManager:update(dt)
             currentRow = currentDropRow + 1,
           }
           -- reset
-        elseif currentDropRow == updateTableForThisColumn.finalRowForDrop then 
+        elseif currentDropRow == updateTableForThisColumn.finalRowForDrop and columnLastUpdate > kHoldLength then 
           currentIndex = updateTableForThisColumn.globalIndex
           self.tiles[currentIndex].tile = 4
           self.highestRowByColumn[x] = {
