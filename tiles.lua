@@ -57,11 +57,10 @@ function TileManager:update(dt)
           self.tiles[currentIndex].tile = 4
           self.highestRowByColumn[x] = {
             timeSinceLastUpdate = 0,
-            globalIndex = currentIndex, --maxIndexForColumn
+            globalIndex = currentIndex,
             finalRowForDrop = -1,
             currentRow = currentDropRow,
           }
-
         else
           currentIndex = updateTableForThisColumn.globalIndex
           updatingValue = self.tiles[currentIndex].tile
@@ -144,7 +143,7 @@ end
 
 function TileManager:tileHit(indexOfDroplet) 
   randomPercentage = math.random(1,100)
-  if self.highestRowByColumn[indexOfDroplet].currentRow == -1 and randomPercentage > 50 then 
+  if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 50 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
 
