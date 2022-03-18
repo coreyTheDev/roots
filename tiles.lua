@@ -196,15 +196,7 @@ end
 
 -- Tile = Object:extend()
 
--- Nutrients = {
---   ZERO=0,
--- 	ONE=1,
--- 	TWO=2,
--- 	THREE=3,
--- 	FOUR=4,
---   FIVE=5,
---   FOG=6
--- }
+
 
 -- next steps: have this not return an array, and rely on tileset to set / update the value
 function TileManager:createTiles()

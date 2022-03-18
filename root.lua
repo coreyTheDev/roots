@@ -1,9 +1,11 @@
 class ('Root').extends()
 local point = playdate.geometry.point
 
+-- create root segment (4 points with start and end corrected for next input)
+
 function Root:init()
 	Root.super.init()
-	self.nodes = { point.new(10, 1), point.new(10, 2), point.new(11, 2) }
+	self.nodes = { point.new(10, 1), point.new(10, 2), point.new(11, 2), point.new(12, 2) }
 	self.x = x
 	self.y = y
 	self.pathProgress = 0.025
