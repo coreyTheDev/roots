@@ -6,8 +6,10 @@ import "rain"
 import "tiles"
 import "root"
 import "input"
+import "catmull"
 
 gfx = playdate.graphics
+geo = playdate.geometry
 
 width, height = playdate.display.getSize()
 gridWidth = width / 20
@@ -20,6 +22,8 @@ local lastDawnRootCount = 0
 -- heartOutline = love.graphics.newImage("images/heart-outline.png")
 
 function myGameSetup()
+  
+  math.randomseed(playdate.getSecondsSinceEpoch())
   -- Object = require "classic"
   -- require "tiles"
   -- require "root"
@@ -300,6 +304,21 @@ function playdate.update()
   
   playdate.graphics.setLineWidth(3)
   
+  local curvePoints = generateSpline(root:toCoordinates())
+  
+  -- local rawPoints = {
+  --   geo.point.new(25, 50), geo.point.new(50, 70), geo.point.new(70, 200), geo.point.new(90, 25)  
+  -- }
+  -- local curvePoints = generateSpline(rawPoints)
+  
+  for i=2, #curvePoints do
+    local x = curvePoints[i-1].x
+    local y = curvePoints[i-1].y
+    local pX = curvePoints[i].x
+    local pY = curvePoints[i].y
+    gfx.drawLine(x, y, pX, pY)
+  end
+  
   -- divide #root.nodes / 4 - that is the number of bezier curves to draw
   
   -- % #root.nodes / 4 and draw those as arcs or something
@@ -308,126 +327,129 @@ function playdate.update()
   -- idea 1: go 1 back instead of 2 on the double bezier approach
   -- head: keep in progress curve w/ 3,2,1 overlapping points, etc. 
   
-  currentRootCurveCount = math.floor(#root.nodes / 4)
-  -- if lastDawnRootCount ~= currentRootCurveCount then
-    -- print("updating root count from "..lastDawnRootCount.. " to: "..currentRootCurveCount)
-    -- lastDawnRootCount = currentRootCurveCount
-    for i=1, math.floor(#root.nodes / 4) do
-      -- print ("drawing bezier curve "..i)
-      local startingIndex = i * 4
-      local xOffset = tileSize / 2
-      local yOffset = gridStartingY + tileSize / 2
-      
-      local correctedInitialX = 0
-      local correctedInitialY = 0
-      if i > 1 then 
-        local currentNode = root.nodes[startingIndex - 3] -- get first node in this curve
-        local previousNode = root.nodes[(i - 1) * 4] -- get the last node from the previous draw
-        
-        if previousNode.x < currentNode.x then 
-          -- we approached this node from the left
-          correctedInitialX = -tileSize / 2
-        elseif previousNode.x > currentNode.x then 
-          -- we approached this node from the right
-          correctedInitialX = tileSize / 2
-        elseif previousNode.y > currentNode.y then 
-          -- we approached this node from the bottom (higher y)
-          correctedInitialY = tileSize / 2
-        elseif previousNode.y < currentNode.y then 
-          -- we approached this node from the top (lower y)
-          correctedInitialY = -tileSize / 2
-        end
-      end
-      
-      
-      local correctedEndingX = 0
-      local correctedEndingY = 0
-      if i < math.floor(#root.nodes / 4) then 
-        local currentNode = root.nodes[startingIndex] -- get last node in this curve (we draw backwards atm)
-        local nextNode = root.nodes[startingIndex + 1] -- get the last node from the previous draw
-        
-        if nextNode.x < currentNode.x then 
-          -- we exited this curve from the left
-          correctedEndingX = -tileSize / 2
-        elseif nextNode.x > currentNode.x then 
-          -- we approached this node from the right
-          correctedEndingX = tileSize / 2
-        elseif nextNode.y > currentNode.y then 
-          -- we approached this node from the bottom (higher y)
-          correctedEndingY = tileSize / 2
-        elseif nextNode.y < currentNode.y then 
-          -- we approached this node from the top (lower y)
-          correctedEndingY = -tileSize / 2
-        end
-      end
-      
-      local p0X = root.nodes[startingIndex].x * tileSize + xOffset + correctedEndingX
-      local p0Y =  (root.nodes[startingIndex].y - 1)* tileSize + yOffset + correctedEndingY
-      local p1X = root.nodes[startingIndex-1].x * tileSize + xOffset
-      local p1Y = (root.nodes[startingIndex-1].y - 1) * tileSize + yOffset
-      local p2X = root.nodes[startingIndex - 2].x * tileSize + xOffset
-      local p2Y = (root.nodes[startingIndex - 2].y - 1) * tileSize + yOffset
-      local p3X = root.nodes[startingIndex - 3].x * tileSize + xOffset + correctedInitialX
-      local p3Y = (root.nodes[startingIndex - 3].y - 1) * tileSize + yOffset + correctedInitialY
-      curveLine(
-        p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
-      )
-      
-      -- if we've drawing the second root then we need to connect this drawn root above to the previous root via an additional curve
-      -- if i ~= 1 then 
-      --   
-      --   local p0X = root.nodes[startingIndex - 1].x * tileSize + xOffset
-      --   local p0Y =  (root.nodes[startingIndex - 1].y - 1)* tileSize + yOffset
-      --   local p1X = root.nodes[startingIndex - 2].x * tileSize + xOffset
-      --   local p1Y = (root.nodes[startingIndex - 2].y - 1) * tileSize + yOffset
-      --   local p2X = root.nodes[startingIndex - 3].x * tileSize + xOffset
-      --   local p2Y = (root.nodes[startingIndex - 3].y - 1) * tileSize + yOffset
-      --   local p3X = root.nodes[startingIndex - 4].x * tileSize + xOffset
-      --   local p3Y = (root.nodes[startingIndex - 4].y - 1) * tileSize + yOffset
-      --   
-      --   -- playdate.graphics.setLineWidth(2)
-      --   -- curveLine(
-      --   --   p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
-      --   -- )
-      -- end
-      
-      local currentNode = root.nodes[i]
-      local nextNode = root.nodes[i+1]
-      print("drawing line segment start: ".. tostring(currentNode).." end: "..tostring(nextNode))
   
-      -- gfx.drawLine(currentNode.x * tileSize + tileSize / 2, gridStartingY + (currentNode.y - 1) * tileSize + tileSize / 2, nextNode.x * tileSize + tileSize / 2, gridStartingY + (nextNode.y - 1) * tileSize + tileSize / 2)
-    end
-    
+  -- coreyTODO: uncomment
   
-  
-  
-  if #root.nodes % 4 ~= 0 then
-    -- print ("drawing bezier curve "..i)
-    local pointsInCurrentCurve = #root.nodes % 4
-    local pointsNeededToCompleteCurve = 4 - pointsInCurrentCurve
-    local startingIndex = #root.nodes
-    local xOffset = tileSize / 2
-    local yOffset = gridStartingY + tileSize / 2
-    
-    local p0X = root.nodes[startingIndex].x * tileSize + xOffset
-    local p0Y =  (root.nodes[startingIndex].y - 1)* tileSize + yOffset
-    local p1Index
-    if pointsInCurrentCurve > 1 then p1Index = startingIndex - 1 else p1Index = startingIndex end
-    local p2Index
-    if pointsInCurrentCurve > 2 then p2Index = startingIndex - 2 else p2Index = p1Index end
-    local p3Index = p2Index
-    
-    local p1X = root.nodes[p1Index].x * tileSize + xOffset
-    local p1Y = (root.nodes[p1Index].y - 1) * tileSize + yOffset
-    local p2X = root.nodes[p2Index].x * tileSize + xOffset
-    local p2Y = (root.nodes[p2Index].y - 1) * tileSize + yOffset
-    local p3X = root.nodes[p3Index].x * tileSize + xOffset
-    local p3Y = (root.nodes[p3Index].y - 1) * tileSize + yOffset
-    
-    curveLine(
-      p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
-    )
-  end
+  -- currentRootCurveCount = math.floor(#root.nodes / 4)
+  -- -- if lastDawnRootCount ~= currentRootCurveCount then
+  --   -- print("updating root count from "..lastDawnRootCount.. " to: "..currentRootCurveCount)
+  --   -- lastDawnRootCount = currentRootCurveCount
+  --   for i=1, math.floor(#root.nodes / 4) do
+  --     -- print ("drawing bezier curve "..i)
+  --     local startingIndex = i * 4
+  --     local xOffset = tileSize / 2
+  --     local yOffset = gridStartingY + tileSize / 2
+  --     
+  --     local correctedInitialX = 0
+  --     local correctedInitialY = 0
+  --     if i > 1 then 
+  --       local currentNode = root.nodes[startingIndex - 3] -- get first node in this curve
+  --       local previousNode = root.nodes[(i - 1) * 4] -- get the last node from the previous draw
+  --       
+  --       if previousNode.x < currentNode.x then 
+  --         -- we approached this node from the left
+  --         correctedInitialX = -tileSize / 2
+  --       elseif previousNode.x > currentNode.x then 
+  --         -- we approached this node from the right
+  --         correctedInitialX = tileSize / 2
+  --       elseif previousNode.y > currentNode.y then 
+  --         -- we approached this node from the bottom (higher y)
+  --         correctedInitialY = tileSize / 2
+  --       elseif previousNode.y < currentNode.y then 
+  --         -- we approached this node from the top (lower y)
+  --         correctedInitialY = -tileSize / 2
+  --       end
+  --     end
+  --     
+  --     
+  --     local correctedEndingX = 0
+  --     local correctedEndingY = 0
+  --     if i < math.floor(#root.nodes / 4) then 
+  --       local currentNode = root.nodes[startingIndex] -- get last node in this curve (we draw backwards atm)
+  --       local nextNode = root.nodes[startingIndex + 1] -- get the last node from the previous draw
+  --       
+  --       if nextNode.x < currentNode.x then 
+  --         -- we exited this curve from the left
+  --         correctedEndingX = -tileSize / 2
+  --       elseif nextNode.x > currentNode.x then 
+  --         -- we approached this node from the right
+  --         correctedEndingX = tileSize / 2
+  --       elseif nextNode.y > currentNode.y then 
+  --         -- we approached this node from the bottom (higher y)
+  --         correctedEndingY = tileSize / 2
+  --       elseif nextNode.y < currentNode.y then 
+  --         -- we approached this node from the top (lower y)
+  --         correctedEndingY = -tileSize / 2
+  --       end
+  --     end
+  --     
+  --     local p0X = root.nodes[startingIndex].x * tileSize + xOffset + correctedEndingX
+  --     local p0Y =  (root.nodes[startingIndex].y - 1)* tileSize + yOffset + correctedEndingY
+  --     local p1X = root.nodes[startingIndex-1].x * tileSize + xOffset
+  --     local p1Y = (root.nodes[startingIndex-1].y - 1) * tileSize + yOffset
+  --     local p2X = root.nodes[startingIndex - 2].x * tileSize + xOffset
+  --     local p2Y = (root.nodes[startingIndex - 2].y - 1) * tileSize + yOffset
+  --     local p3X = root.nodes[startingIndex - 3].x * tileSize + xOffset + correctedInitialX
+  --     local p3Y = (root.nodes[startingIndex - 3].y - 1) * tileSize + yOffset + correctedInitialY
+  --     curveLine(
+  --       p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
+  --     )
+  --     
+  --     -- if we've drawing the second root then we need to connect this drawn root above to the previous root via an additional curve
+  --     -- if i ~= 1 then 
+  --     --   
+  --     --   local p0X = root.nodes[startingIndex - 1].x * tileSize + xOffset
+  --     --   local p0Y =  (root.nodes[startingIndex - 1].y - 1)* tileSize + yOffset
+  --     --   local p1X = root.nodes[startingIndex - 2].x * tileSize + xOffset
+  --     --   local p1Y = (root.nodes[startingIndex - 2].y - 1) * tileSize + yOffset
+  --     --   local p2X = root.nodes[startingIndex - 3].x * tileSize + xOffset
+  --     --   local p2Y = (root.nodes[startingIndex - 3].y - 1) * tileSize + yOffset
+  --     --   local p3X = root.nodes[startingIndex - 4].x * tileSize + xOffset
+  --     --   local p3Y = (root.nodes[startingIndex - 4].y - 1) * tileSize + yOffset
+  --     --   
+  --     --   -- playdate.graphics.setLineWidth(2)
+  --     --   -- curveLine(
+  --     --   --   p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
+  --     --   -- )
+  --     -- end
+  --     
+  --     local currentNode = root.nodes[i]
+  --     local nextNode = root.nodes[i+1]
+  --     print("drawing line segment start: ".. tostring(currentNode).." end: "..tostring(nextNode))
+  -- 
+  --     -- gfx.drawLine(currentNode.x * tileSize + tileSize / 2, gridStartingY + (currentNode.y - 1) * tileSize + tileSize / 2, nextNode.x * tileSize + tileSize / 2, gridStartingY + (nextNode.y - 1) * tileSize + tileSize / 2)
+  --   end
+  --   
+  -- 
+  -- 
+  -- 
+  -- if #root.nodes % 4 ~= 0 then
+  --   -- print ("drawing bezier curve "..i)
+  --   local pointsInCurrentCurve = #root.nodes % 4
+  --   local pointsNeededToCompleteCurve = 4 - pointsInCurrentCurve
+  --   local startingIndex = #root.nodes
+  --   local xOffset = tileSize / 2
+  --   local yOffset = gridStartingY + tileSize / 2
+  --   
+  --   local p0X = root.nodes[startingIndex].x * tileSize + xOffset
+  --   local p0Y =  (root.nodes[startingIndex].y - 1)* tileSize + yOffset
+  --   local p1Index
+  --   if pointsInCurrentCurve > 1 then p1Index = startingIndex - 1 else p1Index = startingIndex end
+  --   local p2Index
+  --   if pointsInCurrentCurve > 2 then p2Index = startingIndex - 2 else p2Index = p1Index end
+  --   local p3Index = p2Index
+  --   
+  --   local p1X = root.nodes[p1Index].x * tileSize + xOffset
+  --   local p1Y = (root.nodes[p1Index].y - 1) * tileSize + yOffset
+  --   local p2X = root.nodes[p2Index].x * tileSize + xOffset
+  --   local p2Y = (root.nodes[p2Index].y - 1) * tileSize + yOffset
+  --   local p3X = root.nodes[p3Index].x * tileSize + xOffset
+  --   local p3Y = (root.nodes[p3Index].y - 1) * tileSize + yOffset
+  --   
+  --   curveLine(
+  --     p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y
+  --   )
+  -- end
   
   
   -- end

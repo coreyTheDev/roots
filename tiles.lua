@@ -4,7 +4,7 @@ class ('TileManager').extends()
 kManagerUpdateInterval = 0.5
 kTileFallRate = 0.5
 kHoldLength = 3
-
+tileSize = 20
 function getXYFrom(globalIndex)
 
   local currentIndexY = math.floor(globalIndex / gridWidth)-- 51 / 50 = 1 + 1 101 / 50 + 1 = 3
