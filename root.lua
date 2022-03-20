@@ -37,14 +37,15 @@ function Root:init()
 	Root.super.init(self)
 	-- self.nodes = { playdate.geometry.point.new(10, 1), playdate.geometry.point.new(12, 5), playdate.geometry.point.new(9, 4), playdate.geometry.point.new(7, 6) ,playdate.geometry.point.new(5, 4), playdate.geometry.point.new(1, 3) }
 
-  self.nodes = { RootNode(10, 1), RootNode(11, 2), RootNode(10, 3), RootNode(9, 4), RootNode(8, 2), RootNode(7, 3) }
+  self.nodes = { RootNode(10, 1), RootNode(10, 2), RootNode(11,2) }--, RootNode(10, 3), RootNode(9, 4), RootNode(8, 2), RootNode(7, 3) }
 	self.x = x
 	self.y = y
 	self.pathProgress = 0.025
 	self.pathAnimationConstant = (1.0/#self.nodes)
 end
 
-function Root:toCoordinates()
+function Root:toCoordinates(offsetFromEnd)
+  local endIndex = #self.nodes - offsetFromEnd
 	curvePoints = {}
   -- local xOffset = tileSize / 2
   -- local yOffset = gridStartingY + tileSize / 2
@@ -52,16 +53,19 @@ function Root:toCoordinates()
     -- local globalX = (point.x - 1) * tileSize + xOffset
     -- local globalY = (point.y - 1) * tileSize + yOffset
     --     local yOffset = gridStartingY + tileSize / 2
-    if not node.hidden then
-      table.insert(curvePoints, node.point) 
-    end
+    
+    table.insert(curvePoints, node.point) 
+    if i + 1 > endIndex then return curvePoints end
+    -- if not node.hidden then
+      
+    -- end
 	end
 	return curvePoints
 end
 
 function Root:update(dt)
 	self.pathProgress = self.pathProgress + (self.pathAnimationConstant * 2 * dt)
-	-- print("path progress", self.pathProgress)
+	print("path progress", self.pathProgress)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end
@@ -127,22 +131,35 @@ function Root:updateVisibilityOfNodes()
   
   self.nodes[#self.nodes - 1]:jitter(0.75)
   
-  if #self.nodes >= 3 and math.random(1, 100) < 50 then self.nodes[#self.nodes - 2]:jitter(0.5) end
-  if #self.nodes >= 4 and math.random(1, 100) < 25 then self.nodes[#self.nodes - 2]:jitter(0.25) end
-  if #self.nodes >= 5 and math.random(1, 100) < 13 then self.nodes[#self.nodes - 2]:jitter(0.125) end
-  
-  
-  for i=#self.nodes - 3, #self.nodes - 1 do
-    -- chance for this to be hidden  
-    -- local difference = #self.nodes - i
-    -- local chanceToBeHidden = (1 / (1 + difference)) * 100 -- 0 - 1
-    -- local shouldHide = math.random(1, 100) < chanceToBeHidden
-    -- self.nodes[i].hidden = self.nodes[i].hidden or shouldHide
+  for i=1, #self.nodes - 1 do
+    local reversedIndex = #self.nodes - i
+    -- local percentageToShow = reversedIndex / (#self.nodes - 2) * 0.5
+    local percentageToShow = 1 / (1.5 ^ i)
+    
+    
+    -- percentageToShow *= percentageToShow
+    print("percentage to show for index: "..reversedIndex.."= "..percentageToShow)
+    if math.random(1, 100) < percentageToShow * 100 then self.nodes[reversedIndex]:jitter(percentageToShow) end
+    if percentageToShow * 100 < 1 then return end
   end
+  
+end
+
+
+  -- if #self.nodes >= 3 and math.random(1, 100) < 50 then self.nodes[#self.nodes - 2]:jitter(0.5) end
+  -- if #self.nodes >= 4 and math.random(1, 100) < 25 then self.nodes[#self.nodes - 2]:jitter(0.25) end
+  -- if #self.nodes >= 5 and math.random(1, 100) < 13 then self.nodes[#self.nodes - 2]:jitter(0.125) end
+  
+  
+  -- for i=#self.nodes - 3, #self.nodes - 1 do
+  --   -- chance for this to be hidden  
+  --   -- local difference = #self.nodes - i
+  --   -- local chanceToBeHidden = (1 / (1 + difference)) * 100 -- 0 - 1
+  --   -- local shouldHide = math.random(1, 100) < chanceToBeHidden
+  --   -- self.nodes[i].hidden = self.nodes[i].hidden or shouldHide
+  -- end
   
   
   -- if math.random(1, 100) < 50 then 
   --   table.remove(self.nodes, #self.nodes - 1)-- self.nodes[i].hidden = self.nodes[i].hidden or shouldHide
   -- end
-  
-end

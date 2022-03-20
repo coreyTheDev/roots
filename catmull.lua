@@ -17,12 +17,10 @@ function generateSpline(points)
 			local tSquared = t * t
 			local tCubed = tSquared * t
 
-			
 			local interpolatedX = (-.5 * tension * tCubed + tension * tSquared - .5 * tension * t) * p0.x +
 			(1 + .5 * tSquared * (tension - 6) + .5 * tCubed * (4 - tension)) * p1.x +
 			(.5 * tCubed * (tension - 4) + .5 * tension * t - (tension - 3) * tSquared) * p2.x +
 			(-.5 * tension * tSquared + .5 * tension * tCubed) * p3.x
-			
 			
 			local interpolatedY = (-.5 * tension * tCubed + tension * tSquared - .5 * tension * t) * p0.y +
 			(1 + .5 * tSquared * (tension - 6) + .5 * tCubed * (4 - tension)) * p1.y +

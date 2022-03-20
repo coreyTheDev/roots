@@ -125,6 +125,7 @@ function playdate.update()
   tileManager:update(dt)
   tileManager:draw()
 
+root:update(dt)
 
   -- every second move any 5 tiles down by one
   -- root:update(dt)
@@ -295,29 +296,54 @@ function playdate.update()
   playdate.graphics.setLineWidth(1)
   
   for i = 1, #root.nodes - 1 do
-    
     local currentNode = root.nodes[i]
     local nextNode = root.nodes[i+1]
     -- print("drawing line segment start: ".. tostring(currentNode).." end: "..tostring(nextNode))
     -- gfx.drawLine(currentNode.x * tileSize + tileSize / 2, gridStartingY + (currentNode.y - 1) * tileSize + tileSize / 2, nextNode.x * tileSize + tileSize / 2, gridStartingY + (nextNode.y - 1) * tileSize + tileSize / 2)
   end
   
-  playdate.graphics.setLineWidth(3)
   
-  local curvePoints = generateSpline(root:toCoordinates())
+  local startToHead = root:toCoordinates(0)
+  local curvePoints = generateSpline(startToHead)
+  
+  for i=2, #curvePoints do
+    if (i / #curvePoints) < root.pathProgress then
+      
+      local x = curvePoints[i-1].x
+      local y = curvePoints[i-1].y
+      local pX = curvePoints[i].x
+      local pY = curvePoints[i].y
+      
+      -- gfx.setLineWidth(8)
+      -- gfx.setColor(gfx.kColorWhite)
+      -- gfx.drawLine(x, y, pX, pY)
+      
+      
+      gfx.setLineWidth(5)
+      gfx.setColor(gfx.kColorBlack)
+      gfx.drawLine(x, y, pX, pY)
+      
+      --   love.graphics.setColor(1, 1, 1, alpha)  
+      --   love.graphics.setLineWidth(8)
+      --   love.graphics.line(coordinates)
+        
+      --   love.graphics.setColor(0, 0, 0, alpha)  
+      --   love.graphics.setLineWidth(6)
+      --   love.graphics.line(coordinates)
+      
+      
+    end
+  end
+  
+  
+  -- how to draw the head
+  
   
   -- local rawPoints = {
   --   geo.point.new(25, 50), geo.point.new(50, 70), geo.point.new(70, 200), geo.point.new(90, 25)  
   -- }
   -- local curvePoints = generateSpline(rawPoints)
   
-  for i=2, #curvePoints do
-    local x = curvePoints[i-1].x
-    local y = curvePoints[i-1].y
-    local pX = curvePoints[i].x
-    local pY = curvePoints[i].y
-    gfx.drawLine(x, y, pX, pY)
-  end
   
   -- divide #root.nodes / 4 - that is the number of bezier curves to draw
   
