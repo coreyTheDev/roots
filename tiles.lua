@@ -4,7 +4,8 @@ class ('TileManager').extends()
 kManagerUpdateInterval = 0.5
 kTileFallRate = 0.5
 kHoldLength = 3
-
+tileSize = 20
+halfTile = tileSize / 2
 function getXYFrom(globalIndex)
 
   local currentIndexY = math.floor(globalIndex / gridWidth)-- 51 / 50 = 1 + 1 101 / 50 + 1 = 3
@@ -79,7 +80,7 @@ function TileManager:update(dt)
           self.nutrientTileset:setTileAtPosition(currentIndexX, currentIndexY, 3)--.tile = 3
 
           local nextIndex = currentIndex + gridWidth
-          nextIndexX, nextIndexY = getXYFrom(nextIndex)          
+          nextIndexX, nextIndexY = getXYFrom(nextIndex)         
           self.nutrientTileset:setTileAtPosition(nextIndexX, nextIndexY, 5)
           self.highestRowByColumn[x] = {
             timeSinceLastUpdate = 0,
@@ -157,12 +158,9 @@ end
 
 -- coreytodo: migrate
 function TileManager:eatNodeIfPossible(currentHead)
-    rowOffset = (currentHead.y - 1) * 50
-    columnOffset = currentHead.x
-    tileToEat = rowOffset + columnOffset
-    print("eating tile: ", tileToEat)
-    if self.tiles[tileToEat].tile == 5 then 
-      -- updateTable = {
+    print("eating tile at gridX: ".. currentHead.gridX.." gridY: "..currentHead.gridY)
+    if self.nutrientTileset:getTileAtPosition(currentHead.gridX, currentHead.gridY) == 5 then 
+      -- local updateTable = {
       --   timeSinceLastUpdate = 0,
       --   globalIndex = -1, --maxIndexForColumn
       --   finalRowForDrop = -1,
@@ -196,15 +194,7 @@ end
 
 -- Tile = Object:extend()
 
--- Nutrients = {
---   ZERO=0,
--- 	ONE=1,
--- 	TWO=2,
--- 	THREE=3,
--- 	FOUR=4,
---   FIVE=5,
---   FOG=6
--- }
+
 
 -- next steps: have this not return an array, and rely on tileset to set / update the value
 function TileManager:createTiles()
