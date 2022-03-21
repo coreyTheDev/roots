@@ -7,19 +7,21 @@ import "tiles"
 import "root"
 import "input"
 import "catmull"
+import "plant"
 
 gfx = playdate.graphics
 geo = playdate.geometry
 
 width, height = playdate.display.getSize()
+halfWidth = width / 2
 gridWidth = width / 20
 gridHeight = height / 2 / 20
 gridStartingY = height / 2
 
 local executeOnce = false
 local lastDawnRootCount = 0
--- heart = love.graphics.newImage("images/heart.png")
--- heartOutline = love.graphics.newImage("images/heart-outline.png")
+heart = gfx.image.new("images/heart.png")
+heartOutline = gfx.image.new("images/heart-outline.png")
 
 function myGameSetup()
   
@@ -73,7 +75,7 @@ function myGameSetup()
   -- intro = {title, credits, tutorial}
   
   -- --leaf
-  -- leaf = love.graphics.newImage("images/leaf.png")
+  leaf = gfx.image.new("images/leaf.png")
 
   -- --water
   droplets = {}
@@ -104,7 +106,7 @@ function myGameSetup()
 
   tileManager = TileManager()
   root = Root()
-  -- plant = Plant()
+  plant = Plant()
 end
 
 
@@ -116,64 +118,60 @@ myGameSetup()
 function playdate.update()
   -- Don't know if this call is causing any inefficiencies, but needed to remove the raindrops which are drawn directly on screen
   -- coreytodo: uncomment
-  -- gfx.clear()
+  gfx.clear()
   
   -- Manually setting this could be problematic
   dt = 1/30
-  
-  -- coreytodo: uncomment
-  tileManager:update(dt)
-  tileManager:draw()
-
-root:update(dt)
 
   -- every second move any 5 tiles down by one
-  -- root:update(dt)
+  root:update(dt)
   -- plant:update(dt)
-  -- tileManager:update(dt)
+  tileManager:update(dt)
+  tileManager:draw()
+  
   -- --call droplets randomly
   
 
   -- coreytodo: uncomment
-  -- dropletTick += (dt * rainfall)
-  -- if dropletTick > dropletTimer then
-  --   -- print("spawning droplet")
-  --   dropletSpawn()
-  --   dropletTimer = math.random(1, math.random(2, 4))
-  --   dropletTick = 0
-  -- end
+  dropletTick += (dt * rainfall)
+  if dropletTick > dropletTimer then
+    -- print("spawning droplet")
+    dropletSpawn()
+    dropletTimer = math.random(1, math.random(2, 4))
+    dropletTick = 0
+  end
 
-  -- -- --update droplet positions
-  -- for i,v in ipairs(droplets) do
-  --   if v.y < (gridStartingY - dropletHeight) then
-  --     v.acc = v.acc + dt
-  --     v.y = v.y + (dt*100)*v.acc
-  --   else
-  --     --play musical tone
-  --     -- tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
-  --     -- tone:setVolume(math.random(0.4, 0.5))
-  --     -- tone:play()
+  -- --update droplet positions
+  for i,v in ipairs(droplets) do
+    if v.y < (gridStartingY - dropletHeight) then
+      v.acc = v.acc + dt
+      v.y = v.y + (dt*100)*v.acc
+    else
+      --play musical tone
+      -- tone = love.audio.newSource("audio/" .. "tone" .. v.musicIndex .. ".wav", "static")
+      -- tone:setVolume(math.random(0.4, 0.5))
+      -- tone:play()
       
-  --     -- add Splash graphic in same position
-  --     splashSpawn(v.x, v.y)
+      -- add Splash graphic in same position
+      splashSpawn(v.x, v.y)
 
-  --     --remove Droplet graphic from table
-  --     table.remove(droplets, i)
+      --remove Droplet graphic from table
+      table.remove(droplets, i)
 
-  --     -- update tile
-  --     indexOfDroplet = (v.x + 15) / tileSize
-  --     -- print("tile hit: "..indexOfDroplet)
-  --     tileManager:tileHit(indexOfDroplet)
-  --   end
-  -- end
+      -- update tile
+      indexOfDroplet = (v.x + 15) / tileSize
+      -- print("tile hit: "..indexOfDroplet)
+      tileManager:tileHit(indexOfDroplet)
+    end
+  end
   
-  -- -- -- show Splash for a set, short amount of time
-  -- for i,v in ipairs(splashes) do
-  --   v.timer = v.timer - dt
-  --   if v.timer < 0 then
-  --     table.remove(splashes, i)
-  --   end
-  -- end
+  -- -- show Splash for a set, short amount of time
+  for i,v in ipairs(splashes) do
+    v.timer = v.timer - dt
+    if v.timer < 0 then
+      table.remove(splashes, i)
+    end
+  end
 
 
 
@@ -233,18 +231,18 @@ root:update(dt)
 
 
   -- coreytodo: uncomment
---   for i,v in ipairs(droplets) do
---     if v.y < (gridStartingY - (dropletHeight)) then
---       dropletGraphic:draw(v.x, v.y)   
---     end
---   end
+  for i,v in ipairs(droplets) do
+    if v.y < (gridStartingY - (dropletHeight)) then
+      dropletGraphic:draw(v.x, v.y)   
+    end
+  end
   
--- --   -- Draw Splashes
---   for i,v in ipairs(splashes) do
---     splashGraphic:draw(v.x, v.y) 
---   end
+--   -- Draw Splashes
+  for i,v in ipairs(splashes) do
+    splashGraphic:draw(v.x, v.y) 
+  end
 
-  -- playdate.drawFPS(5, 5)
+  playdate.drawFPS(5, 5)
 
   -- playdate.graphics.drawArc(100, 100, 20, 0, 90)
 
@@ -280,7 +278,7 @@ root:update(dt)
 --   love.graphics.setLineStyle("rough")
 --   love.graphics.line(plantCoordinates)
 
---   plant:draw()
+  plant:draw()
 
   
 --   -- love.graphics.arc( "line", "open", 500, gridStartingY, 20, math.pi, 1.5 * math.pi, 5)
@@ -288,53 +286,8 @@ root:update(dt)
 --   -- print("# root line coordinates: ", #coordinates)
 
 --   -- Draw Root
-
-
-
-  -- coreytodo: uncomment
   
-  playdate.graphics.setLineWidth(1)
-  
-  for i = 1, #root.nodes - 1 do
-    local currentNode = root.nodes[i]
-    local nextNode = root.nodes[i+1]
-    -- print("drawing line segment start: ".. tostring(currentNode).." end: "..tostring(nextNode))
-    -- gfx.drawLine(currentNode.x * tileSize + tileSize / 2, gridStartingY + (currentNode.y - 1) * tileSize + tileSize / 2, nextNode.x * tileSize + tileSize / 2, gridStartingY + (nextNode.y - 1) * tileSize + tileSize / 2)
-  end
-  
-  
-  local startToHead = root:toCoordinates(0)
-  local curvePoints = generateSpline(startToHead)
-  
-  for i=2, #curvePoints do
-    if (i / #curvePoints) < root.pathProgress then
-      
-      local x = curvePoints[i-1].x
-      local y = curvePoints[i-1].y
-      local pX = curvePoints[i].x
-      local pY = curvePoints[i].y
-      
-      -- gfx.setLineWidth(8)
-      -- gfx.setColor(gfx.kColorWhite)
-      -- gfx.drawLine(x, y, pX, pY)
-      
-      
-      gfx.setLineWidth(5)
-      gfx.setColor(gfx.kColorBlack)
-      gfx.drawLine(x, y, pX, pY)
-      
-      --   love.graphics.setColor(1, 1, 1, alpha)  
-      --   love.graphics.setLineWidth(8)
-      --   love.graphics.line(coordinates)
-        
-      --   love.graphics.setColor(0, 0, 0, alpha)  
-      --   love.graphics.setLineWidth(6)
-      --   love.graphics.line(coordinates)
-      
-      
-    end
-  end
-  
+  root:draw()
   
   -- how to draw the head
   
@@ -500,60 +453,11 @@ root:update(dt)
 --   love.graphics.line(coordinates)
   
 --   -- Draw Heart
---   love.graphics.draw(heart, (windowWidth/2) - tileSize+2, gridStartingY+1)
+  heart:draw((width/2) - tileSize+2, gridStartingY+1)
+  
   
 --   -- Draw Floating Hearts
 --   for i,v in ipairs(floatingHearts) do
 --     love.graphics.draw(heartOutline, v.x, v.y) 
 --   end
 end
-
-
-Correction = {
-  LEFT=0,
-	RIGHT=1,
-	TOP=2,
-	BOTTOM=3,
-}
-
--- I more or less understand this function and the high level math behind it
--- Left off looking at https://github.com/love2d/love/blob/main/src/modules/math/BezierCurve.cpp to see what they do and it involves subdividing a larger bezier curve using some method to then rendering that with a degree of accuracy. The accuracy is used to determine the subdivision level
-
--- Options as they exist
--- port over love2d arbirary curve length - XL
--- try some concatenation logic to render roots based on 4 point bezier curves - M
--- looking at polygon support in playdate - S
--- trying to get the effect with arcs - M
-
-local accuracy = 0.005
-function bezier(t, p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y)
-  -- not 100% sure what this math is doing outside of some bezier calculation based on control point t and influenced by 
-  local cX = 3 * (p1X - p0X)
-  local bX = 3 * (p2X - p1X) - cX
-  local aX = p3X - p0X - cX - bX
-  
-  local cY = 3 * (p1Y - p0Y)
-  local bY = 3 * (p2Y - p1Y) - cY
-  local aY = p3Y - p0Y - cY - bY
-  
-  return ((aX * math.pow(t, 3)) + (bX * math.pow(t, 2)) + (cX * t) + p0X),
-      ((aY * math.pow(t, 3)) + (bY * math.pow(t, 2)) + (cY * t) + p0Y)
-end
-
-function curveLine(p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y)
-  local x, y = p0X, p0Y
-  local pX, pY = 0, 0
-  
-  print("("..p0X..","..p0Y..") ("..p1X..","..p1Y..") ("..p2X..","..p2Y..") ("..p3X..","..p3Y..")")
-
-  for t = 0, 1, accuracy do
-    pX, pY = bezier(t, p0X, p0Y, p1X, p1Y, p2X, p2Y, p3X, p3Y)
-    
-    gfx.drawLine(x, y, pX, pY)
-
-    -- print("accuracy: "..t.." (x, y)= ("..x..","..y..") to (px,py): ("..pX..","..pY..")")
-    x, y = pX, pY
-  end
-end
-
--- curveLine(10, 10, 30, 20, 30, 200, 380, 230)

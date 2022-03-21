@@ -38,6 +38,7 @@ function Root:init()
 	-- self.nodes = { playdate.geometry.point.new(10, 1), playdate.geometry.point.new(12, 5), playdate.geometry.point.new(9, 4), playdate.geometry.point.new(7, 6) ,playdate.geometry.point.new(5, 4), playdate.geometry.point.new(1, 3) }
 
   self.nodes = { RootNode(10, 1), RootNode(10, 2), RootNode(11,2) }--, RootNode(10, 3), RootNode(9, 4), RootNode(8, 2), RootNode(7, 3) }
+  self.curvePoints = generateSpline(self:toCoordinates(0))
 	self.x = x
 	self.y = y
 	self.pathProgress = 0.025
@@ -65,17 +66,40 @@ end
 
 function Root:update(dt)
 	self.pathProgress = self.pathProgress + (self.pathAnimationConstant * 2 * dt)
-	print("path progress", self.pathProgress)
+	-- print("path progress", self.pathProgress)
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end
+  
+  
 end
 
+function Root:draw()
+  local curvePoints = self.curvePoints
+  for i=2, #curvePoints do
+    if (i / #curvePoints) < root.pathProgress then
+      local x = curvePoints[i-1].x
+      local y = curvePoints[i-1].y
+      local pX = curvePoints[i].x
+      local pY = curvePoints[i].y
+      
+      gfx.setLineWidth(8)
+      gfx.setColor(gfx.kColorBlack)
+      gfx.drawLine(x, y, pX, pY)
+      
+      gfx.setLineWidth(3)
+      gfx.setColor(gfx.kColorWhite)
+      gfx.drawLine(x, y, pX, pY)
+    end
+  end
+  
+end
 function Root:handleInput(key)
 	print("root handle input w/ key ".. key)
 	head = self.nodes[#self.nodes]
   previous = self.nodes[#self.nodes - 1]
   self.pathAnimationConstant = 1.0/#self.nodes
+  local needsUpdate = false
 	if key == "s" or key == "down" then
 		if head.gridY + 1 <= gridHeight and (head.gridY + 1) ~= previous.gridY then 
 			local newPoint = RootNode(head.gridX, head.gridY + 1)
@@ -84,7 +108,7 @@ function Root:handleInput(key)
       self:updateVisibilityOfNodes()
 			print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
-  		-- print("self.pathProgress = ", self.pathProgress)
+      needsUpdate = true
   	end
   elseif key == "a" or key == "left" then
   	if head.gridX - 1 >= 1 and (head.gridX - 1) ~= previous.gridX then 
@@ -96,6 +120,7 @@ function Root:handleInput(key)
   		print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
+      needsUpdate = true
   	end
   elseif key == "d" or key == "right" then
   	if head.gridX + 1 <= gridWidth and (head.gridX + 1) ~= previous.gridX then 
@@ -106,6 +131,7 @@ function Root:handleInput(key)
       self:updateVisibilityOfNodes()
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
+      needsUpdate = true
   	end
   elseif key == "w" or key == "up" then
 		if head.gridY - 1 >= 1 and (head.gridY - 1) ~= previous.gridY then 
@@ -115,10 +141,14 @@ function Root:handleInput(key)
   		
       self:updateVisibilityOfNodes()
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
+      needsUpdate = true
   		-- print("self.pathProgress = ", self.pathProgress)
   	end
   end
-
+  
+  if needsUpdate then
+    self.curvePoints = generateSpline(root:toCoordinates(0))
+  end
   -- print(self.pathAnimationConstant)
 end
 
@@ -142,7 +172,7 @@ function Root:updateVisibilityOfNodes()
     if math.random(1, 100) < percentageToShow * 100 then self.nodes[reversedIndex]:jitter(percentageToShow) end
     if percentageToShow * 100 < 1 then return end
   end
-  
+
 end
 
 
