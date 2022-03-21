@@ -41,3 +41,5 @@ luac.out
 
 
 .nova/Tasks/
+.nova/
+resources/
