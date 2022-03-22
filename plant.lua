@@ -4,6 +4,7 @@ local point = playdate.geometry.point
 local black = gfx.kColorBlack
 local white = gfx.kColorWhite
 
+
 -- ideas: wiggle root system while cranking to indicate drinking
 
 -- questions: how do plants / roots talk to each other
