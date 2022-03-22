@@ -3,41 +3,60 @@ local gfx = playdate.graphics
 local point = playdate.geometry.point
 local black = gfx.kColorBlack
 local white = gfx.kColorWhite
-function Plant:init()
+
+-- ideas: wiggle root system while cranking to indicate drinking
+
+-- questions: how do plants / roots talk to each other
+
+-- plant things to be done
+-- place plants at x - y
+-- make food consumed variable up to a total of 5
+-- have this variable control the total number of leaves
+-- draw more of path per food consumed (animate up to a leaf when consuming a single food)
+function Plant:init(gridX, numberOfStepsToTop)
   Plant.super.init(self)
-	self.points = { 
-    -- width / 2 = 500
-    -- local seedZero = 
-    point.new(halfWidth - 10, gridStartingY),
-    -- point.new(halfWidth, gridStartingY - 5),
-    point.new(halfWidth, gridStartingY -  15),
-    point.new(halfWidth - 15, gridStartingY - 25), 
-    point.new(halfWidth - 10, gridStartingY - 30), 
-    point.new(halfWidth - 15, gridStartingY - 25), 
-    point.new(halfWidth - 10, gridStartingY - 30), 
-    point.new(halfWidth, gridStartingY - 40), 
-    point.new(halfWidth - 10, gridStartingY - 48), 
-    point.new(halfWidth - 15, gridStartingY - 53), 
-    -- point.new(halfWidth, gridStartingY - 20),
-    -- point.new(halfWidth + 5, gridStartingY - 24),
-    -- point.new(halfWidth, gridStartingY - 28), 
-    -- point.new(halfWidth - 5, gridStartingY - 45), 
-    -- point.new(halfWidth - 10, gridStartingY - 45),
-    -- point.new(halfWidth - 14, gridStartingY - 50), 
-    point.new(halfWidth - 8, gridStartingY - 60),
-    -- point.new(halfWidth - 10, gridStartingY - 58), 
-    -- point.new(halfWidth - 5, gridStartingY - 65), 
-    -- point.new(halfWidth + 5, gridStartingY - 72),
-    -- point.new(halfWidth - 10, gridStartingY - 75),
-  }
+  self.x = (gridX - 1) * tileSize + tileSize / 2
+  self.totalSteps = numberOfStepsToTop
+  
+  -- generating a path to the top:
+  -- steps go outwards from center in a random direction to get to the first step
+  local currentY = gridStartingY
+  local pointsInPath = { point.new(self.x, currentY) }
+  
+  local direction = math.random(2) -- 1 = left, 2 = right
+  for i = 1, self.totalSteps do 
+    local horDisplacement = math.random(2, 5)
+    if direction == 1 then 
+      horDisplacement *= -1 
+      direction = 2
+    else
+      direction = 1
+    end
+    
+    currentY -= math.random(10, 15)
+    local outwardsPoint = point.new(self.x + horDisplacement, currentY)
+    table.insert(pointsInPath, outwardsPoint)
+    -- any given step
+    -- go outwards to a side
+  end
+  currentY -= 5
+  table.insert(pointsInPath, point.new(self.x, currentY))
+  self.points = pointsInPath
+  
+  -- total points are 7 for a height of 5
+  -- origin, 5 curves, point at end of flower
   
 	self.x = halfWidth - 10
 	self.y = gridStartingY
-  self.foodConsumed = 0 
+  self.foodConsumed = 0
   self.flowerGrown = false
 
-	self.pathProgress = math.max(self.foodConsumed, 0.1)
-	self.foodConsumptionPathProgress = (1.0/ (4 * #self.points))
+  -- to get from 0 to 1 we need the path to be 2/7
+  self.currentHeight = 0.5
+  self.pathProgress = self.currentHeight / self.totalSteps 
+  
+	-- self.pathProgress = math.max(self.foodConsumed, 0.1)
+  -- self.foodConsumptionPathProgress = (1.0/ #self.points)
   
   self.curvePoints = generateSpline(self.points)
 end
@@ -68,7 +87,6 @@ function Plant:update(dt)
 end
 
 function Plant:draw()
-  
   local curvePoints = self.curvePoints
   for i=2, #curvePoints do
     if (i / #curvePoints) < self.pathProgress then
@@ -83,48 +101,46 @@ function Plant:draw()
       gfx.drawLine(x, y, pX, pY)
     end
   end
-  
-  
 
   -- Draw Head
-  if self.foodConsumed > 50 then
+  if self.flowerGrown then
     gfx.setColor(gfx.kColorBlack)
-    gfx.fillCircleAtPoint(halfWidth - 3, 35, 15)
+    local pointToPlaceFlower = self.points[#self.points]
+    gfx.fillCircleAtPoint(pointToPlaceFlower.x, pointToPlaceFlower.y - 15, 15)
     gfx.setColor(white)
     gfx.setLineWidth(1)
-    gfx.drawCircleAtPoint(halfWidth - 3, 35, 14)--, 10)
-    gfx.drawCircleAtPoint(halfWidth - 3, 35, 10)--, 18)
+    gfx.drawCircleAtPoint(pointToPlaceFlower.x, pointToPlaceFlower.y - 15, 14)--, 10)
+    gfx.drawCircleAtPoint(pointToPlaceFlower.x, pointToPlaceFlower.y - 15, 10)--, 18)
     gfx.setColor(black)
     -- gfx.setFont(font)
     gfx.drawText("NICE GROWING!", halfWidth + 35, gridStartingY - 20)
   end
   
-  -- Draw Leaves
-  if self.foodConsumed > 10 then
+  -- loop through to draw leaves
+  for i=1,self.foodConsumed do
+    local pointToPlaceLeaf = self.points[i + 1] -- this is the point right after the origin
     gfx.setColor(white)
-    leaf:draw(halfWidth - 5, gridStartingY - 20)
-  end
-  
-  if self.foodConsumed > 20 then
-    gfx.setColor(white)
-    leaf:draw(halfWidth - 20, gridStartingY - 40, gfx.kImageFlippedX)--, 0, -1, -1)
-  end
-  
-  if self.foodConsumed > 30 then
-    gfx.setColor(white)
-    leaf:draw(halfWidth - 5, gridStartingY - 50)
-  end
-  
-  if self.foodConsumed > 40 then
-    gfx.setColor(white)
-    leaf:draw(halfWidth - 9, gridStartingY - 70)--, 0, -1, -1)
-    leaf:draw(halfWidth - 25, gridStartingY - 70, gfx.kImageFlippedX)
+    if pointToPlaceLeaf.x < self.x then 
+      -- we are placing a leaf on the left
+      leaf:draw(pointToPlaceLeaf.x - leaf:getSize() / 1.5, pointToPlaceLeaf.y - 5, gfx.kImageFlippedX)
+    else 
+      leaf:draw(pointToPlaceLeaf.x - 5, pointToPlaceLeaf.y - 5)
+    end
   end
 end
 
 function Plant:handleFoodConsumed()
-  self.foodConsumed = self.foodConsumed + 1
-  self.pathProgress = self.pathProgress + (self.foodConsumptionPathProgress)
+  if self.foodConsumed < self.totalSteps then 
+    self.foodConsumed = self.foodConsumed + 1 
+  else 
+    self.flowerGrown = true  
+  end
+  
+  self.currentHeight += 1
+  -- recalculate path progress based on food consumed
+  self.pathProgress = self.currentHeight / self.totalSteps
+  -- self.pathProgress = self.pathProgress + (self.foodConsumptionPathProgress)
+  
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end

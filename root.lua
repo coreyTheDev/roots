@@ -6,10 +6,11 @@ class ('RootNode').extends()
 function RootNode:init(gridX, gridY)
   RootNode.super.init(self)
   local xOffset = tileSize / 2 -- math.floor(math.random(-tileSize / 2,  tileSize / 2))-- / 2
-  local globalX = (gridX - 1) * tileSize + xOffset
+  local globalX = (gridX - 1) * tileSize
   local yOffset = gridStartingY + tileSize / 2 -- math.floor(math.random(-tileSize / 2, tileSize / 2))-- tileSize / 2
-  local globalY = (gridY - 1) * tileSize + yOffset
-  self.point = playdate.geometry.point.new(globalX, globalY)
+  local globalY = (gridY - 1) * tileSize
+  self.point = playdate.geometry.point.new(globalX + xOffset, globalY + yOffset)
+  self.uncorrectedPoint = playdate.geometry.point.new(globalX, globalY + yOffset)
   self.gridX = gridX
   self.gridY = gridY
   self.hidden = false

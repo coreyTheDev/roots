@@ -94,6 +94,8 @@ function myGameSetup()
   splashTick = 0
   splashTimer = 0.1 --controls how long the splash shows for
   
+  
+  
   -- --forest
   -- forest = {}
   -- forestSize = 150
@@ -106,7 +108,18 @@ function myGameSetup()
 
   tileManager = TileManager()
   root = Root()
-  plant = Plant()
+  plant = Plant(10, math.random(1,5))
+  
+  plantLocations = {
+    RootNode(4, 1), RootNode(7, 1), RootNode(10, 1), RootNode(13, 1), RootNode(16, 1)
+    
+  }
+  local previousLocation = 0
+  for i=1, 5 do
+      local randomLocation = previousLocation + math.random(3, 4)
+      table.insert(plantLocations, thisNode)
+      previousLocation = randomLocation
+  end
 end
 
 
@@ -189,7 +202,12 @@ function playdate.update()
   root:draw()
   
   -- Draw Heart
-  heart:draw((width/2) - tileSize+2, gridStartingY+1)
+  for i,value in ipairs(plantLocations) do 
+    heart:draw(value.uncorrectedPoint.x, gridStartingY + 1)  
+  end
+  
+  
+  -- heart:draw((width/2) - tileSize+2, gridStartingY+1)
   
   
     -- --update heart positions
