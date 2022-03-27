@@ -4,17 +4,18 @@ local point = playdate.geometry.point
 local black = gfx.kColorBlack
 local white = gfx.kColorWhite
 
-
-
 -- ideas: wiggle root system while cranking to indicate drinking
 
 -- questions: how do plants / roots talk to each other
+
 
 -- plant things to be done
 -- place plants at x - y
 -- make food consumed variable up to a total of 5
 -- have this variable control the total number of leaves
 -- draw more of path per food consumed (animate up to a leaf when consuming a single food)
+local kFoodPerStep = 10
+
 function Plant:init(gridX, numberOfStepsToTop)
   Plant.super.init(self)
   self.x = (gridX - 1) * tileSize + tileSize / 2
@@ -48,12 +49,11 @@ function Plant:init(gridX, numberOfStepsToTop)
   -- total points are 7 for a height of 5
   -- origin, 5 curves, point at end of flower
   
-	self.x = halfWidth - 10
 	self.y = gridStartingY
-  self.foodConsumed = 0
   self.flowerGrown = false
 
-  -- to get from 0 to 1 we need the path to be 2/7
+  self.foodConsumed = 0
+  -- to get from 0 to 1 we need the path to be 2 - 7
   self.currentHeight = 0.5
   self.pathProgress = self.currentHeight / self.totalSteps 
   
@@ -114,12 +114,10 @@ function Plant:draw()
     gfx.drawCircleAtPoint(pointToPlaceFlower.x, pointToPlaceFlower.y - 15, 14)--, 10)
     gfx.drawCircleAtPoint(pointToPlaceFlower.x, pointToPlaceFlower.y - 15, 10)--, 18)
     gfx.setColor(black)
-    -- gfx.setFont(font)
-    gfx.drawText("NICE GROWING!", halfWidth + 35, gridStartingY - 20)
   end
   
   -- loop through to draw leaves
-  for i=1,self.foodConsumed do
+  for i=1,math.floor(self.currentHeight) do
     local pointToPlaceLeaf = self.points[i + 1] -- this is the point right after the origin
     gfx.setColor(white)
     if pointToPlaceLeaf.x < self.x then 
@@ -132,13 +130,14 @@ function Plant:draw()
 end
 
 function Plant:handleFoodConsumed()
-  if self.foodConsumed < self.totalSteps then 
+  if self.foodConsumed < self.totalSteps * kFoodPerStep then 
     self.foodConsumed = self.foodConsumed + 1 
   else 
-    self.flowerGrown = true  
+    self.flowerGrown = true 
   end
   
-  self.currentHeight += 1
+  self.currentHeight += (1 / kFoodPerStep)
+  
   -- recalculate path progress based on food consumed
   self.pathProgress = self.currentHeight / self.totalSteps
   -- self.pathProgress = self.pathProgress + (self.foodConsumptionPathProgress)
@@ -146,4 +145,6 @@ function Plant:handleFoodConsumed()
   if self.pathProgress > 1 then 
     self.pathProgress = 1
   end
+  
+  return self.flowerGrown
 end

@@ -1,47 +1,15 @@
 class ('Root').extends()
 local point = playdate.geometry.point
 
-class ('RootNode').extends()
-
-function RootNode:init(gridX, gridY)
-  RootNode.super.init(self)
-  local xOffset = tileSize / 2 -- math.floor(math.random(-tileSize / 2,  tileSize / 2))-- / 2
-  local globalX = (gridX - 1) * tileSize
-  local yOffset = gridStartingY + tileSize / 2 -- math.floor(math.random(-tileSize / 2, tileSize / 2))-- tileSize / 2
-  local globalY = (gridY - 1) * tileSize
-  self.point = playdate.geometry.point.new(globalX + xOffset, globalY + yOffset)
-  self.uncorrectedPoint = playdate.geometry.point.new(globalX, globalY + yOffset)
-  self.gridX = gridX
-  self.gridY = gridY
-  self.hidden = false
-end
-
-function RootNode:jitter(scale)
-  -- scale 1
-  -- 0, tileSize
-  -- scale 0.5
-  -- 0.25 - 0.75
-  -- scale 0.25
-  local tileCenter = tileSize / 2
-  local rangeOfRandomization = tileSize * scale -- 0.5
-  local randomOffsetFromCenter = math.floor(rangeOfRandomization / 2 )
-  local xOffset = math.floor(math.random(tileCenter - randomOffsetFromCenter, tileCenter + randomOffsetFromCenter))-- / 2
-  local globalX = (self.gridX - 1) * tileSize + xOffset
-  local yOffset = gridStartingY + math.floor(math.random(tileCenter - randomOffsetFromCenter, tileCenter + randomOffsetFromCenter))
-  local globalY = (self.gridY - 1) * tileSize + yOffset
-  self.point = playdate.geometry.point.new(globalX, globalY)
-end
-
 -- create root segment (4 points with start and end corrected for next input)
 
-function Root:init()
+function Root:init(gridX)
 	Root.super.init(self)
 	-- self.nodes = { playdate.geometry.point.new(10, 1), playdate.geometry.point.new(12, 5), playdate.geometry.point.new(9, 4), playdate.geometry.point.new(7, 6) ,playdate.geometry.point.new(5, 4), playdate.geometry.point.new(1, 3) }
-
-  self.nodes = { RootNode(10, 1), RootNode(10, 2), RootNode(11,2) }--, RootNode(10, 3), RootNode(9, 4), RootNode(8, 2), RootNode(7, 3) }
+  
+  self.nodes = { RootNode(gridX, 1), RootNode(gridX, 2), RootNode(gridX + 1,2) }--, RootNode(10, 3), RootNode(9, 4), RootNode(8, 2), RootNode(7, 3) }
+  self.gridX = gridX
   self.curvePoints = generateSpline(self:toCoordinates(0))
-	self.x = x
-	self.y = y
 	self.pathProgress = 0.025
 	self.pathAnimationConstant = (1.0/#self.nodes)
 end
@@ -75,22 +43,28 @@ function Root:update(dt)
   
 end
 
-function Root:draw()
+function Root:draw(isActiveRoot)
   local curvePoints = self.curvePoints
   for i=2, #curvePoints do
-    if (i / #curvePoints) < root.pathProgress then
+    if (i / #curvePoints) < self.pathProgress then
       local x = curvePoints[i-1].x
       local y = curvePoints[i-1].y
       local pX = curvePoints[i].x
       local pY = curvePoints[i].y
       
-      gfx.setLineWidth(8)
-      gfx.setColor(gfx.kColorBlack)
-      gfx.drawLine(x, y, pX, pY)
-      
-      gfx.setLineWidth(3)
-      gfx.setColor(gfx.kColorWhite)
-      gfx.drawLine(x, y, pX, pY)
+      if isActiveRoot then 
+        gfx.setLineWidth(8)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.drawLine(x, y, pX, pY)
+        
+        gfx.setLineWidth(3)
+        gfx.setColor(gfx.kColorWhite)
+        gfx.drawLine(x, y, pX, pY)
+      else  
+        gfx.setLineWidth(4)
+        gfx.setColor(gfx.kColorBlack)
+        gfx.drawLine(x, y, pX, pY)
+      end
     end
   end
   
@@ -148,11 +122,15 @@ function Root:handleInput(key)
   end
   
   if needsUpdate then
-    self.curvePoints = generateSpline(root:toCoordinates(0))
+    self.curvePoints = generateSpline(self:toCoordinates(0))
   end
   -- print(self.pathAnimationConstant)
 end
 
+function Root:jitterForCrankInput()
+  self:updateVisibilityOfNodes()
+  self.curvePoints = generateSpline(self:toCoordinates(0))  
+end
 
 
 function Root:updateVisibilityOfNodes()

@@ -80,8 +80,9 @@ function TileManager:update(dt)
           self.nutrientTileset:setTileAtPosition(currentIndexX, currentIndexY, 3)--.tile = 3
 
           local nextIndex = currentIndex + gridWidth
-          nextIndexX, nextIndexY = getXYFrom(nextIndex)         
-          self.nutrientTileset:setTileAtPosition(nextIndexX, nextIndexY, 5)
+          nextIndexX, nextIndexY = getXYFrom(nextIndex)
+          self.nutrientTileset:setTileAtPosition(nextIndexX, nextIndexY, 5) -- we need to disable this 
+          
           self.highestRowByColumn[x] = {
             timeSinceLastUpdate = 0,
             globalIndex = nextIndex, --maxIndexForColumn
@@ -160,6 +161,15 @@ end
 function TileManager:eatNodeIfPossible(currentHead)
     print("eating tile at gridX: ".. currentHead.gridX.." gridY: "..currentHead.gridY)
     if self.nutrientTileset:getTileAtPosition(currentHead.gridX, currentHead.gridY) == 5 then 
+      
+      -- self.highestRowByColumn[currentHead.gridX] = {
+      --   timeSinceLastUpdate = 0,
+      --   globalIndex = currentHead.gridX + ((currentHead.gridY - 1) * gridWidth),
+      --   finalRowForDrop = -1,
+      --   currentRow = currentHead.gridY,
+      -- }
+      -- self.nutrientTileset:setTileAtPosition(currentHead.gridX, currentHead.gridY, 4)
+      
       -- local updateTable = {
       --   timeSinceLastUpdate = 0,
       --   globalIndex = -1, --maxIndexForColumn
@@ -176,7 +186,7 @@ end
 
 function TileManager:tileHit(indexOfDroplet) 
   randomPercentage = math.random(1,100)
-  if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 50 then 
+  if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 1 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
 

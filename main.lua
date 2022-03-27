@@ -2,13 +2,15 @@
 
 import "CoreLibs/graphics"
 import "CoreLibs/object"
+import "CoreLibs/crank"
 import "rain"
 import "tiles"
 import "root"
 import "input"
 import "catmull"
 import "plant"
-
+import "rootNode"
+import "heart"
 gfx = playdate.graphics
 geo = playdate.geometry
 
@@ -94,39 +96,40 @@ function myGameSetup()
   splashTick = 0
   splashTimer = 0.1 --controls how long the splash shows for
   
-  
+  floatingHearts = {}
   
   -- --forest
   -- forest = {}
   -- forestSize = 150
-  
-  -- floatingHearts = {}
-  
   -- for i=1, forestSize do
   --   forestSpawn()
   -- end
 
   tileManager = TileManager()
-  root = Root()
-  plant = Plant(10, math.random(1,5))
   
   plantLocations = {
     RootNode(4, 1), RootNode(7, 1), RootNode(10, 1), RootNode(13, 1), RootNode(16, 1)
-    
   }
-  local previousLocation = 0
-  for i=1, 5 do
-      local randomLocation = previousLocation + math.random(3, 4)
-      table.insert(plantLocations, thisNode)
-      previousLocation = randomLocation
+  
+  plantsInProgress = {}
+  for i,location in ipairs(plantLocations) do
+    local randomCeiling = 5
+    if i > (#plantLocations - 1) then randomCeiling = 4 end
+    local newPlant = Plant(location.gridX, math.random(2,randomCeiling)) -- we'll need to create multiple plants
+    table.insert(plantsInProgress, newPlant)
   end
+  
+  rootsInProgress = {}
+  for i,location in ipairs(plantLocations) do
+    local newRoot = Root(location.gridX)
+    table.insert(rootsInProgress, newRoot)
+  end
+  
+  currentPlantIndex = 3
+  plantsGrown = false
 end
 
-
-
 myGameSetup()
-
-
 
 function playdate.update()
   -- Don't know if this call is causing any inefficiencies, but needed to remove the raindrops which are drawn directly on screen
@@ -134,10 +137,13 @@ function playdate.update()
   
   -- Manually setting this could be problematic
   dt = 1/30
+  
+  handleCrankInput()
 
   -- every second move any 5 tiles down by one
-  root:update(dt)
-  -- plant:update(dt)
+  if currentPlantIndex > 0 then
+    rootsInProgress[currentPlantIndex]:update(dt)
+  end
   tileManager:update(dt)
   tileManager:draw()
   
@@ -195,15 +201,29 @@ function playdate.update()
   end
 
   playdate.drawFPS(5, 5)
-
-  plant:draw()
+  
+  
+  for i,plant in ipairs(plantsInProgress) do
+    plant:draw()
+  end
 
   -- Draw Root
-  root:draw()
+  -- rootsInProgress[currentPlantIndex]:draw() -- we can have up to 5 of these
   
+  for i=1,#rootsInProgress do 
+    if currentPlantIndex ~= i then rootsInProgress[i]:draw(false) end
+  end
+  if currentPlantIndex > 0 then 
+    rootsInProgress[currentPlantIndex]:draw(true)
+  end
+
   -- Draw Heart
   for i,value in ipairs(plantLocations) do 
-    heart:draw(value.uncorrectedPoint.x, gridStartingY + 1)  
+    heart:draw(value.uncorrectedPoint.x + 2, gridStartingY + 1)
+  end
+  
+  if plantsGrown then
+    gfx.drawText("NICE GROWING!", width - 125, 15)
   end
   
   
@@ -211,26 +231,27 @@ function playdate.update()
   
   
     -- --update heart positions
-    -- for i,v in ipairs(floatingHearts) do
-    --   if v.y > -20 then
-    --     v.acc = v.acc + dt
-    --     v.y = v.y - (dt*100)*v.acc
-    --     if v.variant == 1 then
-    --       v.x = v.x + (dt*math.random(30, 60))
-    --     else
-    --       v.x = v.x - (dt*math.random(30, 60))
-    --     end
-    --   else
-    --     table.remove(floatingHearts, i)
-    --   end
-    -- end
+    for i,v in ipairs(floatingHearts) do
+      if v.y > -20 then
+        v.acc = v.acc + dt
+        v.y = v.y - (dt*100)*v.acc
+        if v.variant == 1 then
+          v.x = v.x + (dt*math.random(30, 60))
+        else
+          v.x = v.x - (dt*math.random(30, 60))
+        end
+      else
+        table.remove(floatingHearts, i)
+      end
+    end
     
   -- end
   
 --   -- Draw Floating Hearts
---   for i,v in ipairs(floatingHearts) do
---     love.graphics.draw(heartOutline, v.x, v.y) 
---   end
+  for i,v in ipairs(floatingHearts) do
+    heartOutline:draw(v.x, v.y)
+    -- love.graphics.draw(heartOutline, v.x, v.y) 
+  end
 
 --   -- Draw Ground line
 --   love.graphics.setColor(black)
