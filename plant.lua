@@ -14,7 +14,7 @@ local white = gfx.kColorWhite
 -- make food consumed variable up to a total of 5
 -- have this variable control the total number of leaves
 -- draw more of path per food consumed (animate up to a leaf when consuming a single food)
-local kFoodPerStep = 10
+local kFoodPerStep = 4
 
 function Plant:init(gridX, numberOfStepsToTop)
   Plant.super.init(self)
@@ -133,11 +133,25 @@ function Plant:handleFoodConsumed()
   if self.foodConsumed < self.totalSteps * kFoodPerStep then 
     self.foodConsumed = self.foodConsumed + 1 
   else 
-    self.flowerGrown = true 
+    self.flowerGrown = true
+    
+    totalPlantsGrown += 1
+    
+    flower = playdate.sound.sampleplayer.new("audio/flower.wav")
+    flower:setVolume(math.random(4, 5)/10)
+    flower:play() 
   end
   
   self.currentHeight += (1 / kFoodPerStep)
   
+  -- TODO: figure out a way to make this run every time a new leaf is grown
+  -- if self.foodConsumed%kFoodPerStep == 0 then
+  --   flower = playdate.sound.sampleplayer.new("audio/flower.wav")
+  --   flower:setVolume(0.2)
+  --   flower:setRate(4)
+  --   flower:play() 
+  -- end
+
   -- recalculate path progress based on food consumed
   self.pathProgress = self.currentHeight / self.totalSteps
   -- self.pathProgress = self.pathProgress + (self.foodConsumptionPathProgress)

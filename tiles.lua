@@ -6,6 +6,7 @@ kTileFallRate = 0.5
 kHoldLength = 3
 tileSize = 20
 halfTile = tileSize / 2
+didSoak = nil
 function getXYFrom(globalIndex)
 
   local currentIndexY = math.floor(globalIndex / gridWidth)-- 51 / 50 = 1 + 1 101 / 50 + 1 = 3
@@ -28,12 +29,19 @@ function TileManager:init()
   self.timeSinceLastUpdate = 0
   self.highestRowByColumn = {}
 
-    --nutrients
+  --nutrients
   self.nutrientImagetable = gfx.imagetable.new("images/ground")
   self.nutrientTileset = gfx.tilemap.new()
   self.nutrientTileset:setImageTable(self.nutrientImagetable)
   self.nutrientTileset:setSize(gridWidth, gridHeight)
-  print("tilemap is "..gridWidth.." tiles wide and "..gridHeight.." tiles tall")
+  
+  -- create a sprite from the tilemap
+  self.sprite = gfx.sprite.new(gridWidth, gridHeight)
+  self.sprite:setTilemap(self.nutrientTileset)
+  self.sprite:setCenter(0,0)
+  self.sprite:setZIndex(-200)
+  self.sprite:add()
+  self.sprite:moveTo(0,120)
 
   self:createTiles()
 
@@ -69,7 +77,7 @@ function TileManager:update(dt)
         -- print("updating column: "..x)
         if currentDropRow < updateTableForThisColumn.finalRowForDrop then 
           -- coreytodo: finalRowForDrop
-
+          
           -- move drop down
           -- update current drop to 4
           -- print("current index: ", currentIndex)
@@ -117,8 +125,8 @@ function TileManager:update(dt)
 end
 
 function TileManager:draw()
-
-  self.nutrientTileset:draw(0, height / 2)
+  
+  -- self.nutrientTileset:draw(0, height / 2)
   -- Draw tiles
   -- for index,tile in ipairs(self.tiles) do 
   --     tile:draw()
@@ -185,7 +193,7 @@ function TileManager:eatNodeIfPossible(currentHead)
 end
 
 function TileManager:tileHit(indexOfDroplet) 
-  randomPercentage = math.random(1,100)
+  randomPercentage = math.random(1,rainfallDelay) --TODO: f addes this, test this more to see how it reacts to rain
   if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 1 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)
@@ -197,8 +205,10 @@ function TileManager:tileHit(indexOfDroplet)
       finalRowForDrop = randomEnd,
       currentRow = 1
     }
+    didSoak = true
   else
     self.nutrientTileset:setTileAtPosition(indexOfDroplet, 1, 4)
+    didSoak = false
   end
 end
 

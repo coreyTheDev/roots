@@ -67,7 +67,7 @@ end
 function handleCrankInput() 
   if plantsGrown then return end
   
-  local crankTicked = playdate.getCrankTicks(6)
+  local crankTicked = playdate.getCrankTicks(3)
   if math.abs(crankTicked) == 1 then 
     print ("crank ticked at position: "..playdate.getCrankPosition())
     local currentRoot = rootsInProgress[currentPlantIndex]
@@ -77,9 +77,12 @@ function handleCrankInput()
     if result then
       print("eat successful")
       heartSpawn()
-      -- munch = love.audio.newSource("audio/munch.wav", "static")
-      -- munch:setVolume(0.5)
-      -- munch:play()
+
+      munch = playdate.sound.sampleplayer.new("audio/munch.wav")
+      -- munch:setRate((math.random(8,12)/10)) -- sets variation in pitch
+      munch:setVolume(math.random(3, 4)/10)
+      munch:play()
+      
       local currentPlant = plantsInProgress[currentPlantIndex]
       local completed = currentPlant:handleFoodConsumed()
       
@@ -95,9 +98,11 @@ function handleCrankInput()
       end
     else  
       print("eat failed")
-      -- cancel = love.audio.newSource("audio/cancel.wav", "static")
-      -- cancel:setVolume(0.5)
-      -- cancel:play()
+      
+      cancel = playdate.sound.sampleplayer.new("audio/cancel.wav")
+      -- cancel:setRate(0.5) -- sets variation in pitch
+      cancel:setVolume(math.random(2, 3)/10)
+      cancel:play()
     end
   end
 end

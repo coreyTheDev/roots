@@ -52,19 +52,37 @@ function Root:draw(isActiveRoot)
       local pX = curvePoints[i].x
       local pY = curvePoints[i].y
       
+      -- testing --
+      -- local width = math.ceil(math.abs(x - pX))
+      -- local height = math.ceil(math.abs(y - pY))
+      -- 
+      -- print(width, height)
+      -- 
+      -- self.img = gfx.image.new(width + 1, height + 1)
+      -- self.sprite = gfx.sprite.new(self.img)
+      -- self.sprite:setCenter(0,0)
+      -- self.sprite:add()
+      -- self.sprite:setZIndex(500)
+      -- self.sprite:moveTo(0,0)
+      -- testing -- 
+      
       if isActiveRoot then 
-        gfx.setLineWidth(8)
-        gfx.setColor(gfx.kColorBlack)
-        gfx.drawLine(x, y, pX, pY)
+        -- gfx.pushContext(self.img)
+          gfx.setLineWidth(8)
+          gfx.setColor(gfx.kColorBlack)
+          gfx.drawLine(x, y, pX, pY)
         
-        gfx.setLineWidth(3)
-        gfx.setColor(gfx.kColorWhite)
-        gfx.drawLine(x, y, pX, pY)
+          gfx.setLineWidth(3)
+          gfx.setColor(gfx.kColorWhite)
+          gfx.drawLine(x, y, pX, pY)
+        -- gfx.popContext()
       else  
         gfx.setLineWidth(4)
         gfx.setColor(gfx.kColorBlack)
         gfx.drawLine(x, y, pX, pY)
       end
+      
+      -- self.sprite:remove()
     end
   end
   
