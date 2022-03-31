@@ -20,6 +20,8 @@ splashTimer = 5 -- controls how long the splash shows
 
 prevDropX = nil
 
+-- test
+
 class('splash').extends(gfx.sprite)
 function splash:init(dropletX, dropletY)
   splash.super.init(self)
