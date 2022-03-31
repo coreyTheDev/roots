@@ -28,10 +28,7 @@ function playdate.AButtonDown()
     result = tileManager:eatNodeIfPossible(currentHead)
     if result then
       print("eat successful")
-      heartSpawn()
-      -- munch = love.audio.newSource("audio/munch.wav", "static")
-      -- munch:setVolume(0.5)
-      -- munch:play()
+      
       local currentPlant = plantsInProgress[currentPlantIndex]
       local completed = currentPlant:handleFoodConsumed()
       
@@ -48,9 +45,7 @@ function playdate.AButtonDown()
     else
       
       print("eat failed")
-      -- cancel = love.audio.newSource("audio/cancel.wav", "static")
-      -- cancel:setVolume(0.5)
-      -- cancel:play()
+      
     end
   end
   
@@ -76,13 +71,10 @@ function handleCrankInput()
     result = tileManager:eatNodeIfPossible(currentHead)
     if result then
       print("eat successful")
-      heartSpawn()
 
-      munch = playdate.sound.sampleplayer.new("audio/munch.wav")
-      -- munch:setRate((math.random(8,12)/10)) -- sets variation in pitch
-      munch:setVolume(math.random(3, 4)/10)
-      munch:play()
-      
+      local hrt = heart()
+      hrt:munchSFX()
+
       local currentPlant = plantsInProgress[currentPlantIndex]
       local completed = currentPlant:handleFoodConsumed()
       

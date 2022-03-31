@@ -41,7 +41,7 @@ function TileManager:init()
   self.sprite:setCenter(0,0)
   self.sprite:setZIndex(-200)
   self.sprite:add()
-  self.sprite:moveTo(0,120)
+  self.sprite:moveTo(0,gridStartingY)
 
   self:createTiles()
 
@@ -193,7 +193,7 @@ function TileManager:eatNodeIfPossible(currentHead)
 end
 
 function TileManager:tileHit(indexOfDroplet) 
-  randomPercentage = math.random(1,rainfallDelay) --TODO: f addes this, test this more to see how it reacts to rain
+  randomPercentage = math.random(1, weather.rainfallDelay) --TODO: f addes this, test this more to see how it reacts to rain
   if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 1 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)

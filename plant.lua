@@ -1,3 +1,30 @@
+plantLocations = {
+  RootNode(4, 1), RootNode(7, 1), RootNode(10, 1), RootNode(13, 1), RootNode(16, 1)
+}
+
+plantsInProgress = {}
+function plantsSpawn()
+  for i,location in ipairs(plantLocations) do
+    local randomCeiling = 5
+    if i > (#plantLocations - 1) then randomCeiling = 4 end
+    local newPlant = Plant(location.gridX, math.random(2,randomCeiling)) -- we'll need to create multiple plants
+    table.insert(plantsInProgress, newPlant)
+  end
+end
+
+rootsInProgress = {}
+  function rootsSpawn()
+  for i,location in ipairs(plantLocations) do
+    local newRoot = Root(location.gridX)
+    table.insert(rootsInProgress, newRoot)
+  end
+end
+
+currentPlantIndex = 3
+plantsGrown = false
+totalPlantsGrown = 0
+leaf = gfx.image.new("images/leaf.png")
+
 class ('Plant').extends()
 local gfx = playdate.graphics
 local point = playdate.geometry.point
