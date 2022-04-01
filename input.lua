@@ -14,7 +14,7 @@ function playdate.downButtonDown()
   if not plantsGrown then rootsInProgress[currentPlantIndex]:handleInput("down") end
 end
 
-local kAButtonDisabled = true
+local kAButtonDisabled = false
 
 function playdate.AButtonDown()
   if kAButtonDisabled then return end
@@ -27,7 +27,10 @@ function playdate.AButtonDown()
     currentHead = currentRoot.nodes[#currentRoot.nodes]
     result = tileManager:eatNodeIfPossible(currentHead)
     if result then
-      print("eat successful")
+      -- print("eat successful")
+      
+      local hrt = heart()
+      hrt:munchSFX()
       
       local currentPlant = plantsInProgress[currentPlantIndex]
       local completed = currentPlant:handleFoodConsumed()
@@ -43,8 +46,11 @@ function playdate.AButtonDown()
         end
       end
     else
-      
-      print("eat failed")
+      cancel = playdate.sound.sampleplayer.new("audio/cancel.wav")
+      -- cancel:setRate(0.5) -- sets variation in pitch
+      cancel:setVolume(math.random(2, 3)/10)
+      cancel:play()
+      -- print("eat failed")
       
     end
   end
@@ -64,13 +70,13 @@ function handleCrankInput()
   
   local crankTicked = playdate.getCrankTicks(3)
   if math.abs(crankTicked) == 1 then 
-    print ("crank ticked at position: "..playdate.getCrankPosition())
+    -- print("crank ticked at position: "..playdate.getCrankPosition())
     local currentRoot = rootsInProgress[currentPlantIndex]
     currentRoot:jitterForCrankInput()
     currentHead = currentRoot.nodes[#currentRoot.nodes]
     result = tileManager:eatNodeIfPossible(currentHead)
     if result then
-      print("eat successful")
+      -- print("eat successful")
 
       local hrt = heart()
       hrt:munchSFX()
@@ -89,7 +95,7 @@ function handleCrankInput()
         end
       end
     else  
-      print("eat failed")
+      -- print("eat failed")
       
       cancel = playdate.sound.sampleplayer.new("audio/cancel.wav")
       -- cancel:setRate(0.5) -- sets variation in pitch

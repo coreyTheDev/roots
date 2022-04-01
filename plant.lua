@@ -165,8 +165,11 @@ function Plant:handleFoodConsumed()
     totalPlantsGrown += 1
     
     flower = playdate.sound.sampleplayer.new("audio/flower.wav")
-    flower:setVolume(math.random(4, 5)/10)
-    flower:play() 
+    
+    if flower ~= nil then
+      flower:setVolume(math.random(4, 5)/10)
+      flower:play() 
+    end
   end
   
   self.currentHeight += (1 / kFoodPerStep)

@@ -167,7 +167,7 @@ end
 
 -- coreytodo: migrate
 function TileManager:eatNodeIfPossible(currentHead)
-    print("eating tile at gridX: ".. currentHead.gridX.." gridY: "..currentHead.gridY)
+    -- print("eating tile at gridX: ".. currentHead.gridX.." gridY: "..currentHead.gridY)
     if self.nutrientTileset:getTileAtPosition(currentHead.gridX, currentHead.gridY) == 5 then 
       
       -- self.highestRowByColumn[currentHead.gridX] = {
@@ -193,7 +193,7 @@ function TileManager:eatNodeIfPossible(currentHead)
 end
 
 function TileManager:tileHit(indexOfDroplet) 
-  randomPercentage = math.random(1, weather.rainfallDelay) --TODO: f addes this, test this more to see how it reacts to rain
+  randomPercentage = math.random(1, 100) --TODO: f addes this, test this more to see how it reacts to rain
   if self.highestRowByColumn[indexOfDroplet].finalRowForDrop == -1 and randomPercentage > 1 then 
     randomEnd = math.random(2, gridHeight)
     -- print("droplet hit at ", indexOfDroplet, " random end: ", randomEnd)

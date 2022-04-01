@@ -88,7 +88,7 @@ function Root:draw(isActiveRoot)
   
 end
 function Root:handleInput(key)
-	print("root handle input w/ key ".. key)
+	-- print("root handle input w/ key ".. key)
 	head = self.nodes[#self.nodes]
   previous = self.nodes[#self.nodes - 1]
   self.pathAnimationConstant = 1.0/#self.nodes
@@ -99,7 +99,7 @@ function Root:handleInput(key)
       table.insert(self.nodes, newPoint)
       -- 1 in 2 chance to delete node above
       self:updateVisibilityOfNodes()
-			print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
+			-- print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
       needsUpdate = true
   	end
@@ -110,7 +110,7 @@ function Root:handleInput(key)
       -- 1 in 2 chance to delete node to your right
       
       self:updateVisibilityOfNodes()
-  		print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
+  		-- print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
   		-- print("self.pathProgress = ", self.pathProgress)
       needsUpdate = true
@@ -119,7 +119,7 @@ function Root:handleInput(key)
   	if head.gridX + 1 <= gridWidth and (head.gridX + 1) ~= previous.gridX then 
   		local newPoint = RootNode(head.gridX + 1, head.gridY)
   		table.insert(self.nodes, newPoint)
-  		print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
+  		-- print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
       
       self:updateVisibilityOfNodes()
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
@@ -130,7 +130,7 @@ function Root:handleInput(key)
 		if head.gridY - 1 >= 1 and (head.gridY - 1) ~= previous.gridY then 
 			local newPoint = RootNode(head.gridX, head.gridY - 1)
   		table.insert(self.nodes, newPoint)
-  		print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
+  		-- print("adding new point: ".. tostring(newPoint).." to self.nodes w/ total count: ".. #self.nodes)
   		
       self:updateVisibilityOfNodes()
   		self.pathProgress = math.min(((#self.nodes - 1) / #self.nodes), 1)
@@ -165,7 +165,7 @@ function Root:updateVisibilityOfNodes()
     
     
     -- percentageToShow *= percentageToShow
-    print("percentage to show for index: "..reversedIndex.."= "..percentageToShow)
+    -- print("percentage to show for index: "..reversedIndex.."= "..percentageToShow)
     if math.random(1, 100) < percentageToShow * 100 then self.nodes[reversedIndex]:jitter(percentageToShow) end
     if percentageToShow * 100 < 1 then return end
   end

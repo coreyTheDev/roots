@@ -3,24 +3,27 @@ gfx = playdate.graphics
 dropletGraphic = gfx.image.new("images/droplet.png")
 dropletWidth, dropletHeight = dropletGraphic:getSize()
 
--- rainfallDelay, rainfallDensity, rainfallAccRate = weatherPhase
 weather = {
-  phase = nil,
+  phase = nil, -- keeps track of the current phase of weather it is
   rainfallDelay = 27, -- frames before next raindrop; lower is faster; must be integer greater than 1
   rainfallDensity = 3, -- maximum number of drops produced each time drops are produced; integer less than 8 ideally
   rainfallAccRate = 7, -- acceleration (somewhat generic speed value); best between 3 - 30
-  dynamic = true
 }
 
 rainfallTimer = playdate.frameTimer.new(weather.rainfallDelay)
 rainfallTimer.destroyOnComplete = false
+rainfallTimer.repeats = true
+rainfallDiff = 0 -- helper to adjust timer based on any dynamically changed delay values
+
+flux = playdate.frameTimer.new(0)
+flux.repeats = true
+fluxTrigger = 100 -- number of frames between each flux call
+fluxMod = 2 -- the amount that rainfallDelay is modified each trigger
 
 splashGraphic = gfx.image.new("images/splash.png")
 splashTimer = 5 -- controls how long the splash shows
 
 prevDropX = nil
-
--- test
 
 class('splash').extends(gfx.sprite)
 function splash:init(dropletX, dropletY)
@@ -51,11 +54,11 @@ function droplet:init()
   
   if self.x == prevDropX then
     self.x = math.random(1, gridWidth) -- re-roll! helps (mostly) prevent raindrops spawning in same spot
-    print('re-roll the droplet!')
+    print('re-roll the droplet X pos!')
   end
   if self.x == prevDropX then
     self.x = math.random(1, gridWidth) -- re-roll... again...
-    print('re-roll the droplet... again !')
+    print('re-roll the droplet X pos... again !')
   end
   prevDropX = self.x
   
@@ -82,9 +85,9 @@ function droplet:update()
     else
       index = (self.musicIndex * 2) + 1
     end
-    local tone = playdate.sound.sampleplayer.new("audio/" .. "tone" .. index .. ".wav")
     
-    if tone ~= nil then -- to prevent crashing if system didn't have time to create the tone
+    local tone = playdate.sound.sampleplayer.new("audio/" .. "tone" .. index .. ".wav")
+    if tone ~= nil then -- to prevent crashing if system didn't have bandwidth to create the tone
       tone:setVolume(math.random(4, 5)/10)
       tone:play()
     end
@@ -103,58 +106,108 @@ function droplet:update()
 end
 
 function weatherUpdate()
-  if rainfallTimer.frame >= weather.rainfallDelay then
+
+  if rainfallTimer.frame >= (weather.rainfallDelay - rainfallDiff) then
     for i=1, math.random(0, weather.rainfallDensity) do
       droplet()
     end
-    
-    if math.random(weather.phase, 6) == 6 and weather.dynamic then
-      weatherDynamic()
-    end
-    
     rainfallTimer:reset()
   end
   
   if weather.phase ~= totalPlantsGrown then
     weatherPhase(totalPlantsGrown)
   end
-  
-  
 end
 
 function weatherPhase(phase)
-  print('change phase')
-  if phase == 0 then
-    weather.phase = 0
-    weather.dynamic = false
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 17, 1, 6
-  elseif phase == 1 then
-    weather.phase = 1
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 22, 4, 3
-  elseif phase == 2 then
-    weather.phase = 2
-    weather.dynamic = false
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 6, 1, 9
+  fluxMod = 2
+  rainfallDiff = 0
+  
+  weather.phase = phase
+  print("phase:" .. weather.phase)
+  
+  if weather.phase == 0 then
+    
+    print('- - itty bitty drips - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 13, 1, 6
+    
+    flux.duration = 600
+    flux:reset()
+    flux:start()
+  elseif weather.phase == 1 then
+    
+    print('- - chunky chords - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 24, 5, 2
+    
+    flux.duration = 200
+    flux:reset()
+    flux:start()
+  elseif weather.phase == 2 then
+    
+    print('- - steady syncopation - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 15, 2, 7
+    
+    flux.duration = 300
+    flux:reset()
+    flux:start()
+  elseif weather.phase == 3 then
+    
+    print('- - downpour - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 3, 2, 5
+    
+    flux.duration = 200
+    flux:reset()
+    flux:start()
+  elseif weather.phase == 4 then
+    
+    print('- - after the storm - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 17, 1, 2
+    
+    flux.duration = 500
+    flux:reset()
+    flux:start()
+  elseif weather.phase == 5 then
+    
+    print('- - forever rain - -')
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 22, 3, 3
+    
+    flux.duration = 500  
+    flux:reset()
+    flux:start()     
   end
   
-  -- variation constants
-  delayMax, delayMin = weather.rainfallDelay + 3, weather.rainfallDelay - weather.phase
-  densityMax, densityMin = weather.rainfallDensity + 1, weather.rainfallDensity - 1
-  accRateMax, accRateMin = weather.rainfallAccRate + weather.phase, weather.rainfallAccRate - 1
+  printWeather()
+  
+  flux.updateCallback = function(timer)
+    if timer.frame%fluxTrigger == 0 then
+      weather.rainfallDelay += fluxMod
+      rainfallDiff += fluxMod
+    end
+  end
+  
+  flux.timerEndedCallback = function(timer)
+    print('flip flux direction')
+    fluxMod = fluxMod * -1
+  end
 end
 
-function weatherDynamic()
-  weather.rainfallDelay = math.random(delayMin, delayMax)
-  weather.rainfallDensity = math.random(densityMin, densityMax)
-  weather.rainfallAccRate = math.random(accRateMin, accRateMax)
-  printTable(weather)
+function printWeather()
+  print('delay: ' .. weather.rainfallDelay, 'density: ' .. weather.rainfallDensity, 'acc: ' .. weather.rainfallAccRate)
 end
 
-  -- some way to make this work
--- flourish = math.random(1,100)
--- if flourish >= 70 then
---   rainfallDelay = 2
---   print('flourish')
--- else
---   rainfallDelay = 27
--- end
+-- Debugging tool
+function playdate.keyPressed(key)
+  if key == '0' then
+    totalPlantsGrown = 0
+  elseif key == '1' then
+    totalPlantsGrown = 1
+  elseif key == '2' then
+    totalPlantsGrown = 2
+  elseif key == '3' then
+    totalPlantsGrown = 3
+  elseif key == '4' then
+    totalPlantsGrown = 4
+  elseif key == '5' then
+    totalPlantsGrown = 5
+  end
+end
