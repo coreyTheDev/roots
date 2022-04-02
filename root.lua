@@ -77,6 +77,7 @@ function Root:draw(isActiveRoot)
           gfx.drawLine(x, y, pX, pY)
         -- gfx.popContext()
       else  
+        -- make this into an image/sprite to optimize
         gfx.setLineWidth(4)
         gfx.setColor(gfx.kColorBlack)
         gfx.drawLine(x, y, pX, pY)

@@ -114,7 +114,7 @@ function weatherUpdate()
     rainfallTimer:reset()
   end
   
-  if weather.phase ~= totalPlantsGrown then
+  if weather.phase ~= totalPlantsGrown then --attach this more firmly 
     weatherPhase(totalPlantsGrown)
   end
 end

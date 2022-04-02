@@ -47,6 +47,7 @@ function Plant:init(gridX, numberOfStepsToTop)
   Plant.super.init(self)
   self.x = (gridX - 1) * tileSize + tileSize / 2
   self.totalSteps = numberOfStepsToTop
+  self.foodPerStep = kFoodPerStep
   
   -- generating a path to the top:
   -- steps go outwards from center in a random direction to get to the first step
@@ -167,7 +168,7 @@ function Plant:handleFoodConsumed()
     flower = playdate.sound.sampleplayer.new("audio/flower.wav")
     
     if flower ~= nil then
-      flower:setVolume(math.random(4, 5)/10)
+      flower:setVolume(0.5)
       flower:play() 
     end
   end

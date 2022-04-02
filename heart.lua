@@ -48,11 +48,36 @@ function heart:update()
   
 end
 
+munchNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4', 'F#4' }
+availableNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4', 'F#4' }
+munchChannel = playdate.sound.channel.new()
+munchChannel:setVolume(0.12)
+crush = playdate.sound.bitcrusher.new()
+crush:setAmount(0.1)
+crush:setUndersampling(0.89)
+munchChannel:addEffect(crush)
+
 function heart:munchSFX()
-  munch = playdate.sound.sampleplayer.new("audio/munch.wav")
-  -- munch:setRate((math.random(8,12)/10)) -- sets variation in pitch
-  munch:setVolume(math.random(3, 4)/10)
-  munch:play()
+  
+  -- If availableNotes is empty, refill it
+  if #availableNotes == 0 then
+    for i=1, #munchNotes do
+      table.insert(availableNotes, munchNotes[i])
+    end
+    printTable(availableNotes)
+  end
+  
+  local currentNote = math.random(1, #availableNotes)
+
+  munch = playdate.sound.synth.new()
+  
+  munch:setWaveform(playdate.sound.kWaveTriangle)
+  munch:setADSR(0.2, 0.1, 0, 0.1)
+  munchChannel:addSource(munch)
+  munch:playNote(availableNotes[currentNote])
+  
+  table.remove(availableNotes, currentNote)
+  printTable(availableNotes)
 end
 
 function seedsSpawn()
