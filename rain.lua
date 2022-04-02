@@ -58,12 +58,10 @@ function droplet:init()
   -- Get position between -0.5 and 0.5 for audio panning (reducing it for less dramatic effect)
   if self.x < (gridWidth/2) then
     local leftPan = playdate.math.lerp(-0.5, 0, (self.x/10))
-    self.panning = leftPan
-    print('leftPan: ' .. leftPan)
+    self.panning = round(leftPan, 2)
   else
     local rightPan = playdate.math.lerp(0, 0.5, (self.x/10)-1)
-    self.panning = rightPan
-    print('rightPan: ' .. rightPan)
+    self.panning = round(rightPan, 2)
   end
   
   if self.x == prevDropX then
@@ -177,7 +175,7 @@ function weatherPhase(phase)
   elseif weather.phase == 2 then
     
     print('- - steady syncopation - -')
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 15, 2, 7
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 13, 2, 7
     
     flux.duration = 300
     flux:reset()
@@ -185,7 +183,15 @@ function weatherPhase(phase)
   elseif weather.phase == 3 then
     
     print('- - downpour - -')
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 3, 2, 5
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 11, 2, 5 --13 goes down to 3 over time
+    
+    -- Ease down the delay, into the downpour to be less jarring
+    downpourEaseIn = playdate.frameTimer.new(160)
+    downpourEaseIn.updateCallback = function(timer)
+      if timer.frame%20 == 0 then
+        weather.rainfallDelay -= 1
+      end
+    end
     
     flux.duration = 200
     flux:reset()
@@ -193,11 +199,25 @@ function weatherPhase(phase)
   elseif weather.phase == 4 then
     
     print('- - after the storm - -')
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 17, 1, 2
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 1, 1, 2 --1 goes up to 15 over time
     
-    flux.duration = 500
-    flux:reset()
-    flux:start()
+    -- Ease up the delay, out of the downpour to be more natural
+    downpourEaseOut = playdate.frameTimer.new(420)
+    downpourEaseOut.updateCallback = function(timer)
+      if timer.frame%30 == 0 then
+        weather.rainfallDelay += 1
+      end
+    end
+    
+    -- Wait to start the flucuation timer until after transition
+    downpourEaseOut.timerEndedCallback = function(timer)
+      flux.duration = 500
+      flux:reset()
+      flux:start()
+    end
+    
+    flux:pause()
+    
   elseif weather.phase == 5 then
     
     print('- - forever rain - -')

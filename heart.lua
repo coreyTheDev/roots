@@ -14,9 +14,11 @@ function heart:init()
   if prevVariant == 1 then
     self.variant = 2
     prevVariant = 2
+    self.panning = math.random(-3, 0)/10
   else
     self.variant = 1
     prevVariant = 1
+    self.panning = math.random(0, 3)/10
   end
     
   self.img = heartGraphic
@@ -48,8 +50,8 @@ function heart:update()
   
 end
 
-munchNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4', 'F#4' }
-availableNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4', 'F#4' }
+munchNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4'}
+availableNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4' }
 munchChannel = playdate.sound.channel.new()
 munchChannel:setVolume(0.12)
 crush = playdate.sound.bitcrusher.new()
@@ -74,6 +76,7 @@ function heart:munchSFX()
   munch:setWaveform(playdate.sound.kWaveTriangle)
   munch:setADSR(0.2, 0.1, 0, 0.1)
   munchChannel:addSource(munch)
+  munchChannel:setPan(self.panning)
   munch:playNote(availableNotes[currentNote])
   
   table.remove(availableNotes, currentNote)

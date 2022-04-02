@@ -20,6 +20,7 @@ tileSize = 20
 dt = 1/30
 
 -- Imports
+import "utilities"
 import "rain"
 import "tiles"
 import "root"
