@@ -15,6 +15,9 @@ rainfallTimer.destroyOnComplete = false
 rainfallTimer.repeats = true
 rainfallDiff = 0 -- helper to adjust timer based on any dynamically changed delay values
 
+rainChannelL = playdate.sound.channel.new()
+rainChannelR = playdate.sound.channel.new()
+
 flux = playdate.frameTimer.new(0)
 flux.repeats = true
 fluxTrigger = 100 -- number of frames between each flux call
@@ -52,6 +55,17 @@ function droplet:init()
   self:setImage(self.img)
   self.x = math.random(1, gridWidth)
   
+  -- Get position between -0.5 and 0.5 for audio panning (reducing it for less dramatic effect)
+  if self.x < (gridWidth/2) then
+    local leftPan = playdate.math.lerp(-0.5, 0, (self.x/10))
+    self.panning = leftPan
+    print('leftPan: ' .. leftPan)
+  else
+    local rightPan = playdate.math.lerp(0, 0.5, (self.x/10)-1)
+    self.panning = rightPan
+    print('rightPan: ' .. rightPan)
+  end
+  
   if self.x == prevDropX then
     self.x = math.random(1, gridWidth) -- re-roll! helps (mostly) prevent raindrops spawning in same spot
     print('re-roll the droplet X pos!')
@@ -86,10 +100,28 @@ function droplet:update()
       index = (self.musicIndex * 2) + 1
     end
     
-    local tone = playdate.sound.sampleplayer.new("audio/" .. "tone" .. index .. ".wav")
-    if tone ~= nil then -- to prevent crashing if system didn't have bandwidth to create the tone
-      tone:setVolume(math.random(4, 5)/10)
-      tone:play()
+    local dropletTone = playdate.sound.sampleplayer.new("audio/" .. "tone" .. index .. ".wav")
+    
+    if dropletTone ~= nil then -- to prevent crashing if system didn't have bandwidth to create the tone
+      
+      -- Reduce the panning effect during heavy rainfall
+      if weather.phase == 3 then
+        self.panning = self.panning/2
+      end
+      
+      if self.panning <= 0 then
+        -- Left channel
+        rainChannelL:setPan(self.panning)
+        rainChannelL:addSource(dropletTone)
+      else
+        -- Right channel
+        rainChannelR:setPan(self.panning)
+        rainChannelR:addSource(dropletTone)
+      end
+      
+      
+      dropletTone:setVolume(math.random(4, 5)/10)
+      dropletTone:play()
     end
     
     self:remove()
@@ -169,7 +201,7 @@ function weatherPhase(phase)
   elseif weather.phase == 5 then
     
     print('- - forever rain - -')
-    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 22, 3, 3
+    weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 20, 3, 3
     
     flux.duration = 500  
     flux:reset()

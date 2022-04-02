@@ -4,6 +4,8 @@ import "CoreLibs/object"
 import "CoreLibs/crank"
 import "CoreLibs/sprites"
 import "CoreLibs/frameTimer"
+import "CoreLibs/math"
+
 gfx = playdate.graphics
 geo = playdate.geometry
 
