@@ -53,7 +53,7 @@ end
 munchNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4'}
 availableNotes = { 'A#2', 'B2', 'D#3', 'F#3', 'C#4' }
 munchChannel = playdate.sound.channel.new()
-munchChannel:setVolume(0.12)
+munchChannel:setVolume(0.07)
 crush = playdate.sound.bitcrusher.new()
 crush:setAmount(0.1)
 crush:setUndersampling(0.89)

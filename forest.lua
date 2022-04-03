@@ -88,7 +88,6 @@ function forestAnimation()
           end
           
           trees[j][k].anim.timerEndedCallback = function(timer)
-            print('rev')
             trees[j][k].animDir = trees[j][k].animDir * -1
           end
         else

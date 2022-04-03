@@ -26,6 +26,10 @@ fluxMod = 2 -- the amount that rainfallDelay is modified each trigger
 splashGraphic = gfx.image.new("images/splash.png")
 splashTimer = 5 -- controls how long the splash shows
 
+motifOverride = false
+preventMotif = false
+preventMotifTime = 12 -- time in seconds until another motif can play after one plays
+
 prevDropX = nil
 
 class('splash').extends(gfx.sprite)
@@ -47,7 +51,7 @@ end
 
 
 class('droplet').extends(gfx.sprite)
-function droplet:init()
+function droplet:init(musicIndex)
   droplet.super.init(self)
   
   self.acc = weather.rainfallAccRate
@@ -64,24 +68,82 @@ function droplet:init()
     self.panning = round(rightPan, 2)
   end
   
-  if self.x == prevDropX then
-    self.x = math.random(1, gridWidth) -- re-roll! helps (mostly) prevent raindrops spawning in same spot
-    print('re-roll the droplet X pos!')
+  -- If the droplet doesn't have a preset note on init
+  if musicIndex == nil then    
+    if self.x == prevDropX then
+      self.x = math.random(1, gridWidth) -- re-roll! helps (mostly) prevent raindrops spawning in same spot
+      print('re-roll the droplet X pos!')
+    end
+    if self.x == prevDropX then
+      self.x = math.random(1, gridWidth) -- re-roll... again...
+      print('re-roll the droplet X pos... again !')
+    end
+    prevDropX = self.x
+    
+    self.variant = math.random(1,2) -- choose between the two sound variants per column
+    self.musicIndex = (self.x * 2) + (self.variant - 1)
+    
+  -- If the droplet is a preset note
+  else
+    self.musicIndex = musicIndex
+    self.x = math.floor(musicIndex/2) -- 4, 7, 10, 13, 16
   end
-  if self.x == prevDropX then
-    self.x = math.random(1, gridWidth) -- re-roll... again...
-    print('re-roll the droplet X pos... again !')
-  end
-  prevDropX = self.x
   
-  self.musicIndex = self.x
-  self.x = (self.x * tileSize) - 15 --limit it to and center it on tile
+  self.file = "audio/" .. "tone" .. self.musicIndex .. ".wav"
+  self.tone = playdate.sound.sampleplayer.new(self.file)
+  
+  self.x = (self.x * tileSize) - 15 -- limit it to and center it on tile
   self.y = -dropletHeight + math.random(-3, 3)
   self:setCenter(0,0)
   self:moveTo(self.x, self.y)
   self:add()
 end
 
+function motifPlay()
+  motifTimer = playdate.frameTimer.new(preventMotifTime*30)
+  -- motifTimer.delay = 10 -- wait 
+  print('Play me the motif you piano man')
+  
+  local rDel, rDen, rAcc = weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate
+  weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 0, 1, 5
+  
+  motifTimer.updateCallback = function(timer)
+    if timer.frame == 1 then
+      droplet(math.random(8,9))
+    end
+    
+    if timer.frame == 10 then
+      droplet(math.random(14,15))
+    end
+    
+    if timer.frame == 18 then
+      
+      droplet(math.random(32,33))
+    end
+    
+    if timer.frame == 25 then
+      droplet(math.random(26,27))
+    end
+    
+    if timer.frame == 32 then
+      droplet(math.random(20,21))
+      
+      weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = rDel, rDen, rAcc
+      rainfallTimer:start()
+      motifOverride = false
+    end
+    
+    if timer.frame == 40 then
+      
+    end
+  end
+  
+  motifTimer.timerEndedCallback = function(timer)
+    preventMotif = false
+  end
+end
+
+randomThing = true
 function droplet:update()
   self:moveTo(self.x, self.y)
   
@@ -90,17 +152,19 @@ function droplet:update()
     self.y = self.y + (self.acc/10)
   else
     
-    -- play sfx tone
-    local index = nil
-    if math.random(1,2)%2 == 0 then 
-      index = self.musicIndex * 2
-    else
-      index = (self.musicIndex * 2) + 1
+    -- Motif override, if allowed
+    if not preventMotif then
+      if self.musicIndex == 8 or self.musicIndex == 9 then
+      dropletTone = nil -- prevent the current drop from playing
+      preventMotif = true -- prevent another motif from playing until the timer is totally complete
+      motifOverride = true -- set this to prevent any other drops from spawning temporarily
+      rainfallTimer:pause() 
+      
+      motifPlay() -- play the motif
+      end
     end
     
-    local dropletTone = playdate.sound.sampleplayer.new("audio/" .. "tone" .. index .. ".wav")
-    
-    if dropletTone ~= nil then -- to prevent crashing if system didn't have bandwidth to create the tone
+    if self.tone ~= nil then -- to prevent crashing if system didn't have bandwidth to create the tone
       
       -- Reduce the panning effect during heavy rainfall
       if weather.phase == 3 then
@@ -110,23 +174,24 @@ function droplet:update()
       if self.panning <= 0 then
         -- Left channel
         rainChannelL:setPan(self.panning)
-        rainChannelL:addSource(dropletTone)
+        rainChannelL:addSource(self.tone)
       else
         -- Right channel
         rainChannelR:setPan(self.panning)
-        rainChannelR:addSource(dropletTone)
+        rainChannelR:addSource(self.tone)
       end
       
-      
-      dropletTone:setVolume(math.random(4, 5)/10)
-      dropletTone:play()
+      self.tone:setVolume(math.random(4, 5)/10)
+      self.tone:play()
     end
     
     self:remove()
 
     -- update tile
-    indexOfDroplet = (self.x + 15) / tileSize -- what is this doing
-    tileManager:tileHit(indexOfDroplet)
+    if not motifOverride then
+      indexOfDroplet = (self.x + 15) / tileSize -- what is this doing
+      tileManager:tileHit(indexOfDroplet)
+    end
     
     -- add Splash graphic in same position
     if not didSoak then
@@ -135,9 +200,11 @@ function droplet:update()
   end
 end
 
+
+
 function weatherUpdate()
 
-  if rainfallTimer.frame >= (weather.rainfallDelay - rainfallDiff) then
+  if rainfallTimer.frame >= (weather.rainfallDelay - rainfallDiff) and not motifOverride then
     for i=1, math.random(0, weather.rainfallDensity) do
       droplet()
     end
@@ -161,11 +228,20 @@ function weatherPhase(phase)
     print('- - itty bitty drips - -')
     weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 13, 1, 6
     
+    droplet(8) -- start the game with a motif
+    
     flux.duration = 600
     flux:reset()
     flux:start()
-  elseif weather.phase == 1 then
     
+    -- During the intro, force a bit more the use of the motif
+    motifBlast = playdate.frameTimer.new(math.random(200,400))
+    motifBlast.repeats = true
+    motifBlast.timerEndedCallback = function(timer)
+      print('motif blast')
+      droplet(8)
+    end
+  elseif weather.phase == 1 then
     print('- - chunky chords - -')
     weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 24, 5, 2
     
@@ -185,6 +261,10 @@ function weatherPhase(phase)
     print('- - downpour - -')
     weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 11, 2, 5 --13 goes down to 3 over time
     
+    -- During the downpour, prevent motifs from interrupting
+    motifTimer:remove()
+    preventMotif = true
+    
     -- Ease down the delay, into the downpour to be less jarring
     downpourEaseIn = playdate.frameTimer.new(160)
     downpourEaseIn.updateCallback = function(timer)
@@ -201,6 +281,9 @@ function weatherPhase(phase)
     print('- - after the storm - -')
     weather.rainfallDelay, weather.rainfallDensity, weather.rainfallAccRate = 1, 1, 2 --1 goes up to 15 over time
     
+    preventMotif = false
+    preventMotifTime = 14
+    
     -- Ease up the delay, out of the downpour to be more natural
     downpourEaseOut = playdate.frameTimer.new(420)
     downpourEaseOut.updateCallback = function(timer)
@@ -211,6 +294,8 @@ function weatherPhase(phase)
     
     -- Wait to start the flucuation timer until after transition
     downpourEaseOut.timerEndedCallback = function(timer)
+      -- At the conclusion of the easing out of the downpour, force a motif
+      droplet(8)
       flux.duration = 500
       flux:reset()
       flux:start()
@@ -229,6 +314,10 @@ function weatherPhase(phase)
   end
   
   printWeather()
+  
+  if weather.phase ~= 0 then
+    motifBlast:remove() -- remove this after the intro
+  end
   
   flux.updateCallback = function(timer)
     if timer.frame%fluxTrigger == 0 then
