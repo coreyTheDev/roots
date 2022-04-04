@@ -276,6 +276,10 @@ function weatherPhase(phase)
     flux.duration = 200
     flux:reset()
     flux:start()
+    
+    -- logic to update decay rate
+    orphanRowValue = 2
+    tileFalloffSeconds = {5,3,2,2,1}
   elseif weather.phase == 4 then
     
     print('- - after the storm - -')
